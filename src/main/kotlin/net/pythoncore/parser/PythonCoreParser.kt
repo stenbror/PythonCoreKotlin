@@ -71,7 +71,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         }
     }
 
-    fun parseAtomExpr() : BaseNode {
+    private fun parseAtomExpr() : BaseNode {
         val start = tokenizer.curIndex
         var symbol = Token(TokenCode.Empty)
         if (tokenizer.curSymbol.tokenKind == TokenCode.PyAwait) {
@@ -79,15 +79,31 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             tokenizer.advance()
         }
         val node = parseAtom()
-        if (tokenizer.curSymbol.tokenKind in listOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
+        if (tokenizer.curSymbol.tokenKind in setOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
             val nodes = mutableListOf<BaseNode>()
-            while (tokenizer.curSymbol.tokenKind in listOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
+            while (tokenizer.curSymbol.tokenKind in setOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
                 nodes.add(parseTrailer())
             }
             return AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, nodes.toTypedArray())
         }
         return AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, null )
     }
+
+    private fun parsePower() : BaseNode {
+        val start = tokenizer.curIndex
+        val node = parseAtomExpr()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            return PowerOperatorNode(start, tokenizer.curIndex, node, symbol, parseFactor())
+        }
+        return node
+    }
+
+    fun parseFactor() : BaseNode {
+        return BaseNode(-1, -1)
+    }
+
 
 
 
