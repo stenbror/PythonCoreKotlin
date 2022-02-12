@@ -247,6 +247,83 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return BitwiseStarExpressionNode(start, tokenizer.curIndex, symbol, parseBitwiseOr())
     }
 
+    private fun parseComparison() : BaseNode {
+        val start = tokenizer.curIndex
+        var left = parseBitwiseOr()
+        val operators = setOf(
+                TokenCode.PyLess,
+                TokenCode.PyLessEqual,
+                TokenCode.PyEqual,
+                TokenCode.PyGreater,
+                TokenCode.PyGreaterEqual,
+                TokenCode.PyNotEqual,
+                TokenCode.PyNot,
+                TokenCode.PyIn,
+                TokenCode.PyIs)
+
+        while (tokenizer.curSymbol.tokenKind in operators) {
+
+            when (tokenizer.curSymbol.tokenKind) {
+                TokenCode.PyLess -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareLessOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+                TokenCode.PyLessEqual -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareLessEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+                TokenCode.PyEqual -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+                TokenCode.PyNotEqual -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareNotEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+                TokenCode.PyGreaterEqual -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareGreaterEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+                TokenCode.PyGreater -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareGreaterOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+                TokenCode.PyNot -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind != TokenCode.PyIn) {
+                        throw SyntaxError(tokenizer.curIndex, "Expecting 'not in', but missing 'in'")
+                    }
+                    val symbol2 = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareNotInOperatorNode(start, tokenizer.curIndex, left, symbol, symbol2, parseBitwiseOr())
+                }
+                TokenCode.PyIn -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = CompareInOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+                TokenCode.PyIs -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyNot) {
+                        val symbol2 = tokenizer.curSymbol
+                        tokenizer.advance()
+                        left = CompareIsNotOperatorNode(start, tokenizer.curIndex, left, symbol, symbol2, parseBitwiseOr())
+                    }
+                    left = CompareIsOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                }
+            }
+        }
+        return left;
+    }
+
 
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
