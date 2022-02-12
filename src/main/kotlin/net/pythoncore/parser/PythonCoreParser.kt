@@ -3,7 +3,7 @@ package net.pythoncore.parser
 import net.pythoncore.parser.ast.*
 
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
-    val tokenizer = scanner
+    private val tokenizer = scanner
 
 
 
@@ -79,9 +79,9 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             tokenizer.advance()
         }
         val node = parseAtom()
-        if (tokenizer.curSymbol.tokenKind in setOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
+        if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
             val nodes = mutableListOf<BaseNode>()
-            while (tokenizer.curSymbol.tokenKind in setOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
+            while (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
                 nodes.add(parseTrailer())
             }
             return AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, nodes.toTypedArray())
@@ -100,7 +100,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return node
     }
 
-    fun parseFactor() : BaseNode {
+    private fun parseFactor() : BaseNode {
         val start = tokenizer.curIndex
         val symbol = tokenizer.curSymbol
         when (symbol.tokenKind) {
