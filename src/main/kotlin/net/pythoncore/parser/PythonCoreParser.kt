@@ -203,6 +203,18 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return left
     }
 
+    private fun parseBitwiseAnd() : BaseNode {
+        val start = tokenizer.curIndex
+        var left = parseShift()
+
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyBitAnd) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            left = BitwiseAndExpressionNode(start, tokenizer.curIndex, left, symbol, parseShift())
+        }
+        return left
+    }
+
 
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
