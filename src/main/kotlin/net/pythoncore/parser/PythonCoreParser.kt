@@ -122,6 +122,41 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         }
     }
 
+    private fun parseTerm() : BaseNode {
+        val start = tokenizer.curIndex
+        val left = parseFactor()
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyMul -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                return TermMulOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+            }
+            TokenCode.PyDiv -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                return TermDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+            }
+            TokenCode.PyFloorDiv -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                return TermFloorDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+            }
+            TokenCode.PyModulo -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                return TermModuloOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+            }
+            TokenCode.PyMatrice -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                return TermMatriceOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+            }
+            else -> {
+                return left
+            }
+        }
+    }
+
 
 
 

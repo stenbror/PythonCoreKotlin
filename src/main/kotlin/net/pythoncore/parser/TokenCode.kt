@@ -46,7 +46,7 @@ enum class TokenCode {
     PyMinus,
     PyMul,
     PyPower,
-    PyDIV,
+    PyDiv,
     PyFloorDiv, //
     PyModulo,
     PyMatrice,
