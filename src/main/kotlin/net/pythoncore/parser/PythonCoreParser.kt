@@ -358,6 +358,47 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return left
     }
 
+    private fun parseLambda(isCond: Boolean) : LambdaBaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseTest(isCond: Boolean) : BaseNode {
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyLessEqual) {
+            return parseLambda(isCond)
+        }  else if (!isCond) {
+            return parseOrTest()
+        } else {
+            val start = tokenizer.curIndex
+            var left = parseOrTest()
+            if (tokenizer.curSymbol.tokenKind == TokenCode.PyIf) {
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = parseOrTest()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyElse) {
+                    throw SyntaxError(tokenizer.curIndex, "Expecting 'else' in expression!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                return TestNode(start, tokenizer.curIndex, left, symbol1, right, symbol2, parseTest(true))
+            }
+            return left
+        }
+    }
+
+    private fun parseNamedExpr() : BaseNode {
+        val start = tokenizer.curIndex
+        var left = parseTest(true)
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyColonAssign) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            return ColonAssignNode(start, tokenizer.curIndex, left, symbol, parseTest(true))
+        }
+        return left
+    }
+
+    private fun parseTestListComp() : BaseNode {
+        throw NotImplementedError()
+    }
 
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
