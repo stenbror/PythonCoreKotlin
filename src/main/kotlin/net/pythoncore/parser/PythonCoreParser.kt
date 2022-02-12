@@ -215,6 +215,18 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return left
     }
 
+    private fun parseBitwiseXor() : BaseNode {
+        val start = tokenizer.curIndex
+        var left = parseBitwiseAnd()
+
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyBitXor) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            left = BitwiseXorExpressionNode(start, tokenizer.curIndex, left, symbol, parseBitwiseAnd())
+        }
+        return left
+    }
+
 
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
