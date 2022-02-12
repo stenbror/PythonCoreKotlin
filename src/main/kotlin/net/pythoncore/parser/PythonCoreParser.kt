@@ -334,6 +334,18 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return parseComparison()
     }
 
+    private fun parseAndTest() : BaseNode {
+        val start = tokenizer.curIndex
+        var left = parseNotTest()
+
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyAnd) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            left = AndTestNode(start, tokenizer.curIndex, left, symbol, parseNotTest())
+        }
+        return left
+    }
+
 
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
