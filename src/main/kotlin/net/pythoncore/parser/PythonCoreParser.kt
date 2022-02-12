@@ -9,7 +9,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
 
 
 
-    fun parseAtom() : BaseNode {
+    private fun parseAtom() : BaseNode {
         val start = tokenizer.curIndex
         when (tokenizer.curSymbol.tokenKind) {
             TokenCode.PyFalse -> {
@@ -56,10 +56,42 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
                 }
                 return StringLiteralNode(start, tokenizer.curIndex, symbol)
             }
-
+            TokenCode.PyLeftParen -> {
+                throw NotImplementedError()
+            }
+            TokenCode.PyLeftBracket -> {
+                throw NotImplementedError()
+            }
+            TokenCode.PyLeftCurly -> {
+                throw NotImplementedError()
+            }
             else -> {
                 throw SyntaxError(tokenizer.curIndex, "Illegal literal!")
             }
         }
+    }
+
+    fun parseAtomExpr() : BaseNode {
+        val start = tokenizer.curIndex
+        var symbol = Token(TokenCode.Empty)
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyAwait) {
+            symbol = tokenizer.curSymbol
+            tokenizer.advance()
+        }
+        val node = parseAtom()
+        if (tokenizer.curSymbol.tokenKind in listOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
+            val nodes = mutableListOf<BaseNode>()
+            while (tokenizer.curSymbol.tokenKind in listOf<TokenCode>(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket)) {
+                nodes.add(parseTrailer())
+            }
+            return AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, nodes.toTypedArray())
+        }
+        return AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, null )
+    }
+
+
+
+    private fun parseTrailer() : BaseNode {
+        return BaseNode(-1, -1)
     }
 }
