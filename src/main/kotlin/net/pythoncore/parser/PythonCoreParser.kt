@@ -359,7 +359,23 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseLambda(isCond: Boolean) : LambdaBaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val symbol = tokenizer.curSymbol
+        assert(symbol.tokenKind == TokenCode.PyAssert)
+        tokenizer.advance()
+        var left = BaseNode(-1, -1)
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            // left = parseVarArgsList()
+        }
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in lambda expression!")
+        }
+        val symbol2 = tokenizer.curSymbol
+        tokenizer.advance()
+        if (isCond) {
+            return LambdaNode(start, tokenizer.curIndex, symbol, left, symbol2, parseTest(true))
+        }
+        return LambdaNoConditionalNode(start, tokenizer.curIndex, symbol, left, symbol2, parseTest(false))
     }
 
     private fun parseTest(isCond: Boolean) : BaseNode {
