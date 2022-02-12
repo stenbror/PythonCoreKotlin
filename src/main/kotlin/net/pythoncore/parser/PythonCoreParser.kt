@@ -181,6 +181,27 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return left
     }
 
+    private fun parseShift() : BaseNode {
+        val start = tokenizer.curIndex
+        var left = parseArith()
+
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyShiftLeft || tokenizer.curSymbol.tokenKind == TokenCode.PyShiftRight) {
+
+            when (tokenizer.curSymbol.tokenKind) {
+                TokenCode.PyShiftLeft -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = BitwiseShiftLeftExpressionNode(start, tokenizer.curIndex, left, symbol, parseArith())
+                }
+                TokenCode.PyShiftRight -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = BitwiseShiftRightExpressionNode(start, tokenizer.curIndex, left, symbol, parseArith())
+                }
+            }
+        }
+        return left
+    }
 
 
     private fun parseTrailer() : BaseNode {
