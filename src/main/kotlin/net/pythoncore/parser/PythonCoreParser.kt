@@ -239,6 +239,14 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return left
     }
 
+    private fun parseStarExpr() : BaseNode {
+        val start = tokenizer.curIndex
+        val symbol = tokenizer.curSymbol
+        assert(symbol.tokenKind == TokenCode.PyMul)
+        tokenizer.advance()
+        return BitwiseStarExpressionNode(start, tokenizer.curIndex, symbol, parseBitwiseOr())
+    }
+
 
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
