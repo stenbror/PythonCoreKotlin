@@ -101,7 +101,25 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     fun parseFactor() : BaseNode {
-        return BaseNode(-1, -1)
+        val start = tokenizer.curIndex
+        val symbol = tokenizer.curSymbol
+        when (symbol.tokenKind) {
+            TokenCode.PyPlus -> {
+                tokenizer.advance()
+                return FactorUnaryPlusNode(start, tokenizer.curIndex, symbol, parseFactor())
+            }
+            TokenCode.PyMinus -> {
+                tokenizer.advance()
+                return FactorUnaryMinusNode(start, tokenizer.curIndex, symbol, parseFactor())
+            }
+            TokenCode.PyBitInvert -> {
+                tokenizer.advance()
+                return FactorUnaryInvertNode(start, tokenizer.curIndex, symbol, parseFactor())
+            }
+            else -> {
+                return parsePower()
+            }
+        }
     }
 
 
