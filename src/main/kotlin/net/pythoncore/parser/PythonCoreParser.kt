@@ -58,8 +58,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             }
 
             else -> {
-                // throw
-                return BaseNode(-1, -1)
+                throw SyntaxError(tokenizer.curIndex, "Illegal literal!")
             }
         }
     }
