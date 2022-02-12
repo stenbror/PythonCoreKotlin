@@ -324,6 +324,16 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return left;
     }
 
+    private fun parseNotTest() : BaseNode {
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyNot) {
+            val start = tokenizer.curIndex
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            return NotTestNode(start, tokenizer.curIndex, symbol, parseNotTest())
+        }
+        return parseComparison()
+    }
+
 
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
