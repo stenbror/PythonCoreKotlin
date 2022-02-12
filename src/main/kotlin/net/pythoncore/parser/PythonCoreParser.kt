@@ -124,39 +124,62 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
 
     private fun parseTerm() : BaseNode {
         val start = tokenizer.curIndex
-        val left = parseFactor()
-        when (tokenizer.curSymbol.tokenKind) {
-            TokenCode.PyMul -> {
-                val symbol = tokenizer.curSymbol
-                tokenizer.advance()
-                return TermMulOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
-            }
-            TokenCode.PyDiv -> {
-                val symbol = tokenizer.curSymbol
-                tokenizer.advance()
-                return TermDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
-            }
-            TokenCode.PyFloorDiv -> {
-                val symbol = tokenizer.curSymbol
-                tokenizer.advance()
-                return TermFloorDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
-            }
-            TokenCode.PyModulo -> {
-                val symbol = tokenizer.curSymbol
-                tokenizer.advance()
-                return TermModuloOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
-            }
-            TokenCode.PyMatrice -> {
-                val symbol = tokenizer.curSymbol
-                tokenizer.advance()
-                return TermMatriceOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
-            }
-            else -> {
-                return left
+        var left = parseFactor()
+
+        while (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyMul, TokenCode.PyDiv, TokenCode.PyFloorDiv, TokenCode.PyModulo, TokenCode.PyMatrice)) {
+
+            when (tokenizer.curSymbol.tokenKind) {
+                TokenCode.PyMul -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = TermMulOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                }
+                TokenCode.PyDiv -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = TermDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                }
+                TokenCode.PyFloorDiv -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = TermFloorDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                }
+                TokenCode.PyModulo -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = TermModuloOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                }
+                TokenCode.PyMatrice -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = TermMatriceOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                }
             }
         }
+        return left
     }
 
+    private fun parseArith() : BaseNode {
+        val start = tokenizer.curIndex
+        var left = parseTerm()
+
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyPlus || tokenizer.curSymbol.tokenKind == TokenCode.PyMinus) {
+
+            when (tokenizer.curSymbol.tokenKind) {
+                TokenCode.PyPlus -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = ArithmeticPlusOperatorNode(start, tokenizer.curIndex, left, symbol, parseTerm())
+                }
+                TokenCode.PyMinus -> {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    left = ArithmeticMinusOperatorNode(start, tokenizer.curIndex, left, symbol, parseTerm())
+                }
+            }
+        }
+        return left
+    }
 
 
 
