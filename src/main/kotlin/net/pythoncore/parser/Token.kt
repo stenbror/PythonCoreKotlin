@@ -1,5 +1,5 @@
 package net.pythoncore.parser
 
-class Token {
-
+class Token(tokenCode: TokenCode) {
+    val tokenKind = tokenCode
 }

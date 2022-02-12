@@ -87,3 +87,14 @@ open class LambdaBaseNode(startPos: Int, endPos: Int, symbol1: Token, left: Base
             """.trimMargin()
     }
 }
+
+open class LiteralBaseNode(startPos: Int, endPos: Int, symbol1: Token?)
+    : BaseNode(startPos, endPos) {
+    val symbolOne = symbol1
+
+    override fun toString() : String {
+        return """[LiteralNode] 
+                Symbol1: $symbolOne
+            """.trimMargin()
+    }
+}
