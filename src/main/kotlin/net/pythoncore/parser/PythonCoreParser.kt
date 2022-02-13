@@ -652,11 +652,22 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseSyncCompFor() : BaseNode {
+        val start = tokenizer.curIndex
         throw NotImplementedError()
     }
 
     private fun parseCompFor() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyAsync) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyFor) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting 'for' after async comprehension expression!")
+            }
+            val right = parseSyncCompFor()
+            return CompForNode(start, tokenizer.curIndex, symbol, right)
+        }
+        return parseSyncCompFor()
     }
 
     private fun parseCompIf() : BaseNode {
