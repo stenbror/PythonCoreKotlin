@@ -450,7 +450,23 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseExprList() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val nodeFirst = if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseStarExpr() else parseBitwiseOr()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            val nodes = mutableListOf<BaseNode>()
+            val separators = mutableListOf<Token>()
+            nodes.add(nodeFirst)
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separators.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    throw SyntaxError(tokenizer.curIndex, "Unexpected ',' found in List!")
+                } else if (tokenizer.curSymbol.tokenKind == TokenCode.PyIn) break
+                nodes.add(if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseStarExpr() else parseBitwiseOr())
+            }
+            return ExprListNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
+        }
+        return nodeFirst
     }
 
     private fun parseTestList() : BaseNode {
