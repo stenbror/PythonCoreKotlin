@@ -685,7 +685,16 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseCompIf() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyIf)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val left = parseTest(false)
+        var next = BaseNode(-1, -1)
+        if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyAsync, TokenCode.PyFor, TokenCode.PyIf)) {
+            next = parseCompIter()
+        }
+        return CompIfNode(start, tokenizer.curIndex, symbol1, left, next)
     }
 
     private fun parseYieldExpr() : BaseNode {
