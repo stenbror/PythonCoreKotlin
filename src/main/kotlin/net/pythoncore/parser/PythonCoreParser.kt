@@ -419,4 +419,44 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private fun parseTrailer() : BaseNode {
         return BaseNode(-1, -1)
     }
+
+    private fun parseSubscriptList() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseSubscript() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseExprList() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseTestList() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseDictorSetMaker() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseCompIter() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseSyncCompFor() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseCompFor() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseCompIf() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseYieldExpr() : BaseNode {
+        throw NotImplementedError()
+    }
 }
