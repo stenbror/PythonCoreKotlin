@@ -413,7 +413,28 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseTestListComp() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val nodeFirst = if (tokenizer.curSymbol.tokenKind == TokenCode.PyMinus) parseStarExpr() else parseNamedExpr()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyFor) {
+            val nodes = mutableListOf<BaseNode>()
+            nodes.add(nodeFirst)
+            nodes.add(parseCompFor())
+            return TestListNode(start, tokenizer.curIndex, nodes.toTypedArray(), null)
+        } else if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            val nodes = mutableListOf<BaseNode>()
+            val separators = mutableListOf<Token>()
+            nodes.add(nodeFirst)
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separators.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    throw SyntaxError(tokenizer.curIndex, "Unexpected ',' found in List!")
+                } else if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyRightBracket, TokenCode.PyRightParen)) break
+                nodes.add(if (tokenizer.curSymbol.tokenKind == TokenCode.PyMinus) parseStarExpr() else parseNamedExpr())
+            }
+            return TestListNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
+        }
+        return nodeFirst
     }
 
     private fun parseTrailer() : BaseNode {

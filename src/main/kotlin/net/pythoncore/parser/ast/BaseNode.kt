@@ -99,7 +99,7 @@ open class LiteralBaseNode(startPos: Int, endPos: Int, symbol1: Token?)
     }
 }
 
-open class ListBaseNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>)
+open class ListBaseNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>?)
     : BaseNode(startPos, endPos) {
     val elementNodes = nodes
     val elementerSeparators = separators
@@ -107,7 +107,7 @@ open class ListBaseNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, sepa
     override fun toString() : String {
         return """[ListNode] 
                 Nodes: ${elementNodes}
-                CommaCount: ${elementerSeparators.count()}
+                CommaCount: ${elementerSeparators?.count()}
             """.trimMargin()
     }
 }

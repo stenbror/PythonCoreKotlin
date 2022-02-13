@@ -1,0 +1,6 @@
+package net.pythoncore.parser.ast
+
+import net.pythoncore.parser.Token
+
+class TestListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>?)
+    : ListBaseNode(startPos, endPos, nodes, separators)
