@@ -7,7 +7,11 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
 
 
 
+    private fun parseTestListStarExpr() : BaseNode {
+        return BaseNode(-1, -1)
+    }
 
+    // Expression rules below!
 
     private fun parseAtom() : BaseNode {
         val start = tokenizer.curIndex
@@ -698,6 +702,17 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseYieldExpr() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyYield)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyFrom) {
+            val symbol2 = tokenizer.curSymbol
+            tokenizer.advance()
+            val right = parseTest(true)
+            return YieldFromNode(start, tokenizer.curIndex, symbol1, symbol2, right)
+        }
+        val right = parseTestListStarExpr()
+        return YieldNode(start, tokenizer.curIndex, symbol1, right)
     }
 }
