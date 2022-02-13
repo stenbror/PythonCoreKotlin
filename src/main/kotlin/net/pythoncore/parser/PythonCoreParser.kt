@@ -438,6 +438,43 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseTrailer() : BaseNode {
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyDot, TokenCode.PyLeftParen, TokenCode.PyLeftBracket))
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyDot -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+                    throw SyntaxError(tokenizer.curIndex, "Missing NAME literal after '.'")
+                }
+                val name = tokenizer.curSymbol
+                tokenizer.advance()
+                return DotNameNode(start, tokenizer.curIndex, symbol, name)
+            }
+            TokenCode.PyLeftParen  -> {
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                var node = BaseNode(-1, -1)
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) node = parseArgList()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+                    throw SyntaxError(tokenizer.curIndex, "Missing ')' in call expression!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                return CallNode(start, tokenizer.curIndex, symbol1, node, symbol2)
+            }
+            TokenCode.PyLeftBracket -> {
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                val node = parseSubscriptList()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyLeftBracket) {
+                    throw SyntaxError(tokenizer.curIndex, "Missing ']' in subscript!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                return IndexNode(start, tokenizer.curIndex, symbol1, node, symbol2)
+            }
+        }
         return BaseNode(-1, -1)
     }
 
@@ -524,6 +561,14 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             return TestListNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
         }
         return nodeFirst
+    }
+
+    private fun parseArgList() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseArgument() : BaseNode {
+        throw NotImplementedError()
     }
 
     private fun parseDictorSetMaker() : BaseNode {
