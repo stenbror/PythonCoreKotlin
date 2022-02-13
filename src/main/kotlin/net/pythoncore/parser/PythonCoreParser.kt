@@ -584,7 +584,49 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseArgument() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        var left = BaseNode(-1, -1)
+        var symbol = Token(TokenCode.Empty)
+        var right = BaseNode(-1, -1)
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyMul -> {
+                symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                right = parseTest(true)
+            }
+            TokenCode.PyPower -> {
+                symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                right = parseTest(true)
+            }
+            TokenCode.NAME -> {
+                val first = tokenizer.curSymbol
+                tokenizer.advance()
+                left = NameLiteralNode(start, tokenizer.curIndex, first)
+                when (tokenizer.curSymbol.tokenKind) {
+                    TokenCode.PyFor -> {
+                        right = parseCompFor()
+                    }
+                    TokenCode.PyColonAssign -> {
+                        symbol = tokenizer.curSymbol
+                        tokenizer.advance()
+                        right = parseTest(true)
+                    }
+                    TokenCode.PyAssign -> {
+                        symbol = tokenizer.curSymbol
+                        tokenizer.advance()
+                        right = parseTest(true)
+                    }
+                    else -> {
+                        return left
+                    }
+                }
+            }
+            else -> {
+                throw SyntaxError(tokenizer.curIndex, "Expecting NAME literal in argument!")
+            }
+        }
+        return ArgumentNode(start, tokenizer.curIndex, left, symbol, right)
     }
 
     private fun parseDictorSetMaker() : BaseNode {
