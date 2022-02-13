@@ -462,7 +462,28 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseSubscript() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        var first = BaseNode(-1, -1)
+        var second = BaseNode(-1, -1)
+        var third = BaseNode(-1, -1)
+        var symbol1 = Token(TokenCode.Empty)
+        var symbol2 = Token(TokenCode.Empty)
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) first = parseTest(true)
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyColon) {
+            symbol1 = tokenizer.curSymbol
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind !in setOf(TokenCode.PyColon, TokenCode.PyRightBracket, TokenCode.PyComma)) {
+                second = parseTest(true)
+            }
+            if (tokenizer.curSymbol.tokenKind == TokenCode.PyColon) {
+                symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind !in setOf(TokenCode.PyRightBracket, TokenCode.PyComma)) {
+                    third = parseTest(true)
+                }
+            }
+        }
+        return SubscriptNode(start, tokenizer.curIndex, first, symbol1, second, symbol2, third)
     }
 
     private fun parseExprList() : BaseNode {
