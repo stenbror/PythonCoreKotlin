@@ -653,7 +653,21 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
 
     private fun parseSyncCompFor() : BaseNode {
         val start = tokenizer.curIndex
-        throw NotImplementedError()
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyFor)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val left = parseExprList()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyIn) {
+            throw SyntaxError(tokenizer.curIndex, "Missing 'in' in for comprehension expression!")
+        }
+        val symbol2 = tokenizer.curSymbol
+        tokenizer.advance()
+        val right = parseOrTest()
+        var next = BaseNode(-1, -1)
+        if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyAsync, TokenCode.PyFor, TokenCode.PyIf)) {
+            next = parseCompIter()
+        }
+        return CompSyncForNode(start, tokenizer.curIndex, symbol1, left, symbol2, right, next)
     }
 
     private fun parseCompFor() : BaseNode {
