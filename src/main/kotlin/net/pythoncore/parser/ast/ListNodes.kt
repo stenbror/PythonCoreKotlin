@@ -10,3 +10,6 @@ class ExprListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separator
 
 class SubscriptListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>?)
     : ListBaseNode(startPos, endPos, nodes, separators)
+
+class ArgumentListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>?)
+    : ListBaseNode(startPos, endPos, nodes, separators)

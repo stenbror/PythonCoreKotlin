@@ -564,7 +564,23 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseArgList() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val nodeFirst = parseArgument()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            val nodes = mutableListOf<BaseNode>()
+            val separators = mutableListOf<Token>()
+            nodes.add(nodeFirst)
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separators.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    throw SyntaxError(tokenizer.curIndex, "Unexpected ',' found in Argument List!")
+                } else if (tokenizer.curSymbol.tokenKind == TokenCode.PyRightParen) break
+                nodes.add(parseArgument())
+            }
+            return ArgumentListNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
+        }
+        return nodeFirst
     }
 
     private fun parseArgument() : BaseNode {
