@@ -634,7 +634,21 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseCompIter() : BaseNode {
-        throw NotImplementedError()
+        assert(tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyFor, TokenCode.PyAsync, TokenCode.PyIf))
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyAsync -> {
+                return parseCompFor()
+            }
+            TokenCode.PyFor -> {
+                return parseCompFor()
+            }
+            TokenCode.PyIf -> {
+                return parseCompIf()
+            }
+            else -> {
+                throw NotImplementedError() // Should never happen due to assert statement,
+            }
+        }
     }
 
     private fun parseSyncCompFor() : BaseNode {
