@@ -5,10 +5,102 @@ import net.pythoncore.parser.ast.*
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private val tokenizer = scanner
 
+    // Statement rules below!
 
+    private fun parseStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseSimpleStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseSmall() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseExprStmt() : BaseNode {
+        throw NotImplementedError()
+    }
 
     private fun parseTestListStarExpr() : BaseNode {
         return BaseNode(-1, -1)
+    }
+
+    private fun parseDelStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parsePassStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseFlowStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseBreakStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseContinueStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseReturnStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseYieldStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseRaiseStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseImportStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseImportName() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseImportFrom() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseImportAsName() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseDottedAsName() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseImportAsNames() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseDottedAsNames() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseDottedName() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseGlobalStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseNonlocalStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseAssertStmt() : BaseNode {
+        throw NotImplementedError()
     }
 
     // Expression rules below!
