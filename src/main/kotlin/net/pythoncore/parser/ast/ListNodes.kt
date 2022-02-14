@@ -13,3 +13,8 @@ class SubscriptListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, sepa
 
 class ArgumentListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>?)
     : ListBaseNode(startPos, endPos, nodes, separators)
+
+class StatementListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>?, newline: Token)
+    : ListBaseNode(startPos, endPos, nodes, separators) {
+        val newlineNode = newline
+    }

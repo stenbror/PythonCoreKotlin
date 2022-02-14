@@ -27,10 +27,31 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseSimpleStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val firstNode = parseSmallStmt()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PySemiColon) {
+            val nodes = mutableListOf<BaseNode>()
+            val separators = mutableListOf<Token>()
+            var symbol = Token(TokenCode.Empty)
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PySemiColon) {
+                separators.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind == TokenCode.Newline) {
+                    break
+                }
+                nodes.add(parseSmallStmt())
+            }
+            if (tokenizer.curSymbol.tokenKind != TokenCode.Newline) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting NEWLINE after statement list!")
+            }
+            symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            return StatementListNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray(), symbol)
+        }
+        return firstNode
     }
 
-    private fun parseSmall() : BaseNode {
+    private fun parseSmallStmt() : BaseNode {
         throw NotImplementedError()
     }
 
