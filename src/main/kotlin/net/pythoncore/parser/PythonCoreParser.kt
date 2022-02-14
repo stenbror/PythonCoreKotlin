@@ -200,17 +200,11 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         val start = tokenizer.curIndex
         val symbol = tokenizer.curSymbol
         when (symbol.tokenKind) {
-            TokenCode.PyPlus -> {
-                tokenizer.advance()
-                return FactorUnaryPlusNode(start, tokenizer.curIndex, symbol, parseFactor())
-            }
-            TokenCode.PyMinus -> {
-                tokenizer.advance()
-                return FactorUnaryMinusNode(start, tokenizer.curIndex, symbol, parseFactor())
-            }
+            TokenCode.PyPlus,
+            TokenCode.PyMinus,
             TokenCode.PyBitInvert -> {
                 tokenizer.advance()
-                return FactorUnaryInvertNode(start, tokenizer.curIndex, symbol, parseFactor())
+                return FactorUnaryPlusNode(start, tokenizer.curIndex, symbol, parseFactor())
             }
             else -> {
                 return parsePower()
@@ -685,11 +679,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         var symbol = Token(TokenCode.Empty)
         var right = BaseNode(-1, -1)
         when (tokenizer.curSymbol.tokenKind) {
-            TokenCode.PyMul -> {
-                symbol = tokenizer.curSymbol
-                tokenizer.advance()
-                right = parseTest(true)
-            }
+            TokenCode.PyMul,
             TokenCode.PyPower -> {
                 symbol = tokenizer.curSymbol
                 tokenizer.advance()
@@ -732,14 +722,10 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private fun parseCompIter() : BaseNode {
         assert(tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyFor, TokenCode.PyAsync, TokenCode.PyIf))
         when (tokenizer.curSymbol.tokenKind) {
-            TokenCode.PyAsync -> {
-                return parseCompFor()
-            }
-            TokenCode.PyFor -> {
-                return parseCompFor()
-            }
+            TokenCode.PyAsync,
+            TokenCode.PyFor,
             TokenCode.PyIf -> {
-                return parseCompIf()
+                return parseCompFor()
             }
             else -> {
                 throw NotImplementedError() // Should never happen due to assert statement,
