@@ -72,7 +72,95 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseExprStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        var left = parseTestListStarExpr()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyPlusAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                PlusAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyMinusAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                MinusAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyMulAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                MulAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyPowerAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                PowerAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyDivAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                DivAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyFloorDivAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                FloorDivAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyModuloAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                ModuloAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyMatriceAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                MatriceAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyBitAndAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                BitwiseAndAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyBitOrAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                BitwiseOrAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyBitXorAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                BitwiseXorAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyShiftLeftAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                ShiftLeftAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyShiftRightAssign -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestList()
+                ShiftRightAssignNode(start, tokenizer.curIndex, left, symbol, right)
+            }
+            TokenCode.PyColon -> {
+                BaseNode(-1, -1)
+            }
+            TokenCode.PyAssign -> {
+                BaseNode(-1, -1)
+            }
+            else ->  left
+        }
     }
 
     private fun parseTestListStarExpr() : BaseNode {
