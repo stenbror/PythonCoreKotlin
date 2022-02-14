@@ -8,7 +8,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     // Statement rules below!
 
     private fun parseStmt() : BaseNode {
-        when (tokenizer.curSymbol.tokenKind) {
+        return when (tokenizer.curSymbol.tokenKind) {
             TokenCode.PyIf,
             TokenCode.PyFor,
             TokenCode.PyWhile,
@@ -18,10 +18,10 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             TokenCode.PyDef,
             TokenCode.PyClass,
             TokenCode.PyMatrice -> {
-                return parseCompoundStmt()
+                parseCompoundStmt()
             }
             else -> {
-                return parseSimpleStmt()
+                parseSimpleStmt()
             }
         }
     }
@@ -52,7 +52,23 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseSmallStmt() : BaseNode {
-        throw NotImplementedError()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyDel -> parseDelStmt()
+            TokenCode.PyPass -> parsePassStmt()
+            TokenCode.PyBreak,
+            TokenCode.PyContinue,
+            TokenCode.PyReturn,
+            TokenCode.PyRaise,
+            TokenCode.PyYield -> parseFlowStmt()
+            TokenCode.PyImport,
+            TokenCode.PyFrom -> parseImportStmt()
+            TokenCode.PyGlobal -> parseGlobalStmt()
+            TokenCode.PyNonlocal -> parseNonlocalStmt()
+            TokenCode.PyAssert -> parseAssertStmt()
+            else -> {
+                parseExprStmt()
+            }
+        }
     }
 
     private fun parseExprStmt() : BaseNode {
