@@ -103,6 +103,50 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         throw NotImplementedError()
     }
 
+    private fun parseCompoundStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseAsyncStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseIfStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseElseStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseWhileStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseForStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseTryStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseWithStmt() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseWithItem() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseExceptClause() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseSuite() : BaseNode {
+        throw NotImplementedError()
+    }
+
     // Expression rules below!
 
     private fun parseAtom() : BaseNode {
