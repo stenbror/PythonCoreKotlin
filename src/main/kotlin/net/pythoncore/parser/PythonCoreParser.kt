@@ -8,7 +8,22 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     // Statement rules below!
 
     private fun parseStmt() : BaseNode {
-        throw NotImplementedError()
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyIf,
+            TokenCode.PyFor,
+            TokenCode.PyWhile,
+            TokenCode.PyTry,
+            TokenCode.PyWith,
+            TokenCode.PyAsync,
+            TokenCode.PyDef,
+            TokenCode.PyClass,
+            TokenCode.PyMatrice -> {
+                return parseCompoundStmt()
+            }
+            else -> {
+                return parseSimpleStmt()
+            }
+        }
     }
 
     private fun parseSimpleStmt() : BaseNode {
