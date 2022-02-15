@@ -241,7 +241,16 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseFlowStmt() : BaseNode {
-        throw NotImplementedError()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyBreak -> parseBreakStmt()
+            TokenCode.PyContinue -> parseContinueStmt()
+            TokenCode.PyRaise -> parseRaiseStmt()
+            TokenCode.PyYield -> parseYieldExpr()
+            TokenCode.PyReturn -> parseReturnStmt()
+            else -> {
+                throw SyntaxError(tokenizer.curIndex, "Internal Parser error in FlowStmt Rule!")
+            }
+        }
     }
 
     private fun parseBreakStmt() : BaseNode {
