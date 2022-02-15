@@ -7,6 +7,17 @@ open class BaseNode(startPos: Int, endPos: Int) {
     val nodeEndPos = endPos
 }
 
+open class EmptyBaseNode(startPos: Int, endPos: Int, symbol1: Token)
+    : BaseNode(startPos, endPos) {
+    val symbolOne = symbol1
+
+    override fun toString() : String {
+        return """[UnaryNode] 
+                Symbol: $symbolOne
+            """.trimMargin()
+    }
+}
+
 open class UnaryNode(startPos: Int, endPos: Int, symbol1: Token, right: BaseNode)
     : BaseNode(startPos, endPos) {
     val symbolOne = symbol1
