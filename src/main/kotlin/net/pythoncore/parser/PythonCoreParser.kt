@@ -5,6 +5,7 @@ import net.pythoncore.parser.ast.*
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private val tokenizer = scanner
     private var level = 0 // Loop statement that break and continue can handle
+    private var funcLevel = 0 // function allows return statement
 
     // Statement rules below!
 
@@ -277,7 +278,18 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseReturnStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyReturn)
+        if (funcLevel <= 0) {
+            throw SyntaxError(tokenizer.curIndex, "Return statement outside of function!")
+        }
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        var right = BaseNode(-1, -1)
+        if (tokenizer.curSymbol.tokenKind != TokenCode.Newline && tokenizer.curSymbol.tokenKind != TokenCode.PySemiColon) {
+            right = parseTestListStarExpr()
+        }
+        return ReturnStmtNode(start, tokenizer.curIndex, symbol, right)
     }
 
     private fun parseYieldStmt() : BaseNode {
