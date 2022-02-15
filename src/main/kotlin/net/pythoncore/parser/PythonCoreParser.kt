@@ -320,7 +320,13 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseImportStmt() : BaseNode {
-        throw NotImplementedError()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyImport -> parseImportName()
+            TokenCode.PyFrom -> parseImportFrom()
+            else -> {
+                throw SyntaxError(tokenizer.curIndex, "Internal Parser error in ImportStmt Rule!")
+            }
+        }
     }
 
     private fun parseImportName() : BaseNode {
