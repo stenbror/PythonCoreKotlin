@@ -184,7 +184,43 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseTestListStarExpr() : BaseNode {
-        return BaseNode(-1, -1)
+        val start = tokenizer.curIndex
+        val firstNode = if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseStarExpr() else parseTest(true)
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            val nodes = mutableListOf<BaseNode>()
+            val separators = mutableListOf<Token>()
+            nodes.add(firstNode)
+            val stopToken = setOf(
+                TokenCode.PyPlusAssign,
+                TokenCode.PyMinusAssign,
+                TokenCode.PyMulAssign,
+                TokenCode.PyPowerAssign,
+                TokenCode.PyModuloAssign,
+                TokenCode.PyMatriceAssign,
+                TokenCode.PyBitAndAssign,
+                TokenCode.PyBitXorAssign,
+                TokenCode.PyBitOrAssign,
+                TokenCode.PyShiftLeftAssign,
+                TokenCode.PyShiftRightAssign,
+                TokenCode.PyDivAssign,
+                TokenCode.PyFloorDivAssign,
+                TokenCode.PyColon,
+                TokenCode.PyAssign,
+                TokenCode.PySemiColon,
+                TokenCode.Newline
+            )
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separators.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind in stopToken) break;
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    throw SyntaxError(tokenizer.curIndex, "Unexpected ',' in list!")
+                }
+                nodes.add(if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseStarExpr() else parseTest(true))
+            }
+            return TestListStarExprNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
+        }
+        return firstNode
     }
 
     private fun parseDelStmt() : BaseNode {

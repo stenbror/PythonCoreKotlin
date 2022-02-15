@@ -18,3 +18,6 @@ class StatementListNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, sepa
     : ListBaseNode(startPos, endPos, nodes, separators) {
         val newlineNode = newline
     }
+
+class TestListStarExprNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>?)
+    : ListBaseNode(startPos, endPos, nodes, separators)
