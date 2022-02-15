@@ -154,10 +154,30 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
                 ShiftRightAssignNode(start, tokenizer.curIndex, left, symbol, right)
             }
             TokenCode.PyColon -> {
-                BaseNode(-1, -1)
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = parseTest(true)
+                var symbol2 = Token(TokenCode.Empty)
+                var next = BaseNode(-1, -1)
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
+                    symbol2 = tokenizer.curSymbol
+                    tokenizer.advance()
+                    next = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestListStarExpr()
+                }
+                AnnAssignNode(start, tokenizer.curIndex, left, symbol1, right, symbol2, next)
             }
             TokenCode.PyAssign -> {
-                BaseNode(-1, -1)
+                while (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
+                    val symbol1 = tokenizer.curSymbol
+                    tokenizer.advance()
+                    val right = if (tokenizer.curSymbol.tokenKind == TokenCode.PyYield) parseYieldExpr() else parseTestListStarExpr()
+                    left = AssignNode(start, tokenizer.curIndex, left, symbol1, right)
+                }
+                if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment && left is AssignNode) {
+                    left.addTypeCommentNode(tokenizer.curSymbol)
+                    tokenizer.advance()
+                }
+                left
             }
             else ->  left
         }
