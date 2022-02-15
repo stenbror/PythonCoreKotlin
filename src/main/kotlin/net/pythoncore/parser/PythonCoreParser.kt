@@ -224,7 +224,12 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseDelStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyDel)
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        val right = parseExprList()
+        return DelStmtNode(start, tokenizer.curIndex, symbol, right)
     }
 
     private fun parsePassStmt() : BaseNode {
