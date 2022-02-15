@@ -4,6 +4,7 @@ import net.pythoncore.parser.ast.*
 
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private val tokenizer = scanner
+    private var level = 0 // Loop statement that break and continue can handle
 
     // Statement rules below!
 
@@ -254,11 +255,25 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseBreakStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyBreak)
+        if (level <= 0) {
+            throw SyntaxError(tokenizer.curIndex, "Break statement outside of loop statement!")
+        }
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        return BreakStmtNode(start, tokenizer.curIndex, symbol)
     }
 
     private fun parseContinueStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyContinue)
+        if (level <= 0) {
+            throw SyntaxError(tokenizer.curIndex, "Continue statement outside of loop statement!")
+        }
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        return ContinueStmtNode(start, tokenizer.curIndex, symbol)
     }
 
     private fun parseReturnStmt() : BaseNode {
@@ -266,7 +281,11 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseYieldStmt() : BaseNode {
-        throw NotImplementedError()
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyYield)
+        if (level <= 0) {
+            throw SyntaxError(tokenizer.curIndex, "Yield statement outside of loop statement!")
+        }
+        return parseYieldExpr()
     }
 
     private fun parseRaiseStmt() : BaseNode {
