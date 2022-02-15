@@ -301,7 +301,22 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseRaiseStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyRaise)
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        var left = BaseNode(-1, -1)
+        var symbol2 = Token(TokenCode.Empty)
+        var right = BaseNode(-1, -1)
+        if (tokenizer.curSymbol.tokenKind != TokenCode.Newline && tokenizer.curSymbol.tokenKind != TokenCode.PySemiColon) {
+            left = parseTest(true)
+            if (tokenizer.curSymbol.tokenKind == TokenCode.PyFrom) {
+                symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                right = parseTest(true)
+            }
+        }
+        return RaiseStmtNode(start, tokenizer.curIndex, symbol, left, symbol2, right)
     }
 
     private fun parseImportStmt() : BaseNode {
