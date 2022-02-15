@@ -233,7 +233,11 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parsePassStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyPass)
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        return PassStmtNode(start, tokenizer.curIndex, symbol)
     }
 
     private fun parseFlowStmt() : BaseNode {
