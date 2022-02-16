@@ -339,7 +339,48 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseImportFrom() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyFrom)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val dots = mutableListOf<Token>()
+        while (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyDot, TokenCode.PyElipsis)) {
+            dots.add(tokenizer.curSymbol)
+            tokenizer.advance()
+        }
+        if (dots.count() == 0 && tokenizer.curSymbol.tokenKind != TokenCode.PyImport) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting 'import' in 'from' statement!")
+        }
+        val left = if (tokenizer.curSymbol.tokenKind != TokenCode.PyImport) parseDottedName() else null
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyImport) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting 'import' in 'from' statement!")
+        }
+        val symbol2 = tokenizer.curSymbol
+        tokenizer.advance()
+        var symbol3: Token? = null
+        var right: BaseNode? = null
+        var symbol4: Token? = null
+
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyMul -> {
+                symbol3 = tokenizer.curSymbol
+                tokenizer.advance()
+            }
+            TokenCode.PyLeftParen -> {
+                symbol3 = tokenizer.curSymbol
+                tokenizer.advance()
+                right = parseImportAsNames()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+                    throw SyntaxError(tokenizer.curIndex, "Missing ')' in from import statement!")
+                }
+                symbol4 = tokenizer.curSymbol
+                tokenizer.advance()
+            }
+            else -> {
+                right = parseImportAsNames()
+            }
+        }
+        return ImportFromNode(start, tokenizer.curIndex, symbol1, left, dots.toTypedArray(), symbol2, symbol3, right, symbol4)
     }
 
     private fun parseImportAsName() : BaseNode {
