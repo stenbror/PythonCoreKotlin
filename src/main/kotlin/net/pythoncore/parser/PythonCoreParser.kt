@@ -330,7 +330,12 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseImportName() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyImport)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val right = parseDottedAsNames()
+        return ImportNameNode(start, tokenizer.curIndex, symbol1, right)
     }
 
     private fun parseImportFrom() : BaseNode {
