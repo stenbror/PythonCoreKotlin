@@ -348,7 +348,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             dots.add(tokenizer.curSymbol)
             tokenizer.advance()
         }
-        if (dots.count() == 0 && tokenizer.curSymbol.tokenKind != TokenCode.PyImport) {
+        if (dots.count() == 0 && tokenizer.curSymbol.tokenKind == TokenCode.PyImport) {
             throw SyntaxError(tokenizer.curIndex, "Expecting 'import' in 'from' statement!")
         }
         val left = if (tokenizer.curSymbol.tokenKind != TokenCode.PyImport) parseDottedName() else null
