@@ -11,7 +11,7 @@ enum class TokenCode {
     PyNone,
     PyTrue,
     PyAnd,
-    PyAS,
+    PyAs,
     PyAssert,
     PyAsync,
     PyAwait,
