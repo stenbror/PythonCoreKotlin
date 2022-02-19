@@ -1,6 +1,7 @@
 package net.pythoncore.parser
 
 import net.pythoncore.parser.ast.*
+import javax.swing.plaf.synth.SynthButtonUI
 
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private val tokenizer = scanner
@@ -348,7 +349,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             dots.add(tokenizer.curSymbol)
             tokenizer.advance()
         }
-        if (dots.count() == 0 && tokenizer.curSymbol.tokenKind == TokenCode.PyImport) {
+        if (dots.isEmpty() && tokenizer.curSymbol.tokenKind == TokenCode.PyImport) {
             throw SyntaxError(tokenizer.curIndex, "Expecting 'import' in 'from' statement!")
         }
         val left = if (tokenizer.curSymbol.tokenKind != TokenCode.PyImport) parseDottedName() else null
@@ -404,11 +405,56 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseGlobalStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyGlobal)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting literal NAME in 'global' statement!")
+        }
+        val nodes = mutableListOf<NameLiteralNode>()
+        val separator = mutableListOf<Token>()
+        var literalName = tokenizer.curSymbol
+        tokenizer.advance()
+        nodes.add(NameLiteralNode(start, tokenizer.curIndex, literalName))
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            separator.add(tokenizer.curSymbol)
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting literal NAME after ',' in 'global' statement!")
+            }
+            literalName = tokenizer.curSymbol
+            tokenizer.advance()
+            nodes.add(NameLiteralNode(start, tokenizer.curIndex, literalName))
+        }
+        return GlobalStmtNode(start, tokenizer.curIndex, symbol1, nodes.toTypedArray(), separator.toTypedArray())
     }
 
     private fun parseNonlocalStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyNonlocal)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting literal NAME in 'nonlocall' statement!")
+        }
+
+        val nodes = mutableListOf<NameLiteralNode>()
+        val separator = mutableListOf<Token>()
+        var literalName = tokenizer.curSymbol
+        tokenizer.advance()
+        nodes.add(NameLiteralNode(start, tokenizer.curIndex, literalName))
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            separator.add(tokenizer.curSymbol)
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting literal NAME after ',' in 'nonlocal' statement!")
+            }
+            literalName = tokenizer.curSymbol
+            tokenizer.advance()
+            nodes.add(NameLiteralNode(start, tokenizer.curIndex, literalName))
+        }
+        return NonlocalStmtNode(start, tokenizer.curIndex, symbol1, nodes.toTypedArray(), separator.toTypedArray())
     }
 
     private fun parseAssertStmt() : BaseNode {
