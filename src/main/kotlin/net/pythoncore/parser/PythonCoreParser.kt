@@ -413,7 +413,20 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseDottedAsName() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val left = parseDottedName()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyAs) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting NAME literal in 'import' as statement!")
+            }
+            val literalName = tokenizer.curSymbol
+            tokenizer.advance()
+            val right = NameLiteralNode(start, tokenizer.curIndex, literalName)
+            return DottedAsName(start, tokenizer.curIndex, left, symbol, right)
+        }
+        return left
     }
 
     private fun parseImportAsNames() : BaseNode {
