@@ -556,7 +556,20 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseCompoundStmt() : BaseNode {
-        throw NotImplementedError()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyIf -> parseIfStmt()
+            TokenCode.PyWhile -> parseWhileStmt()
+            TokenCode.PyFor -> parseForStmt()
+            TokenCode.PyTry -> parseTryStmt()
+            TokenCode.PyWith -> parseWithStmt()
+            TokenCode.PyDef,
+            TokenCode.PyMatrice,
+            TokenCode.PyAsync,
+            TokenCode.PyClass ->    throw NotImplementedError()
+            else -> {
+                throw SyntaxError(tokenizer.curIndex, "Internal parse error in compound statement selector rule!")
+            }
+        }
     }
 
     private fun parseAsyncStmt() : BaseNode {
