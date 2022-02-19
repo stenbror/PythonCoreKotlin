@@ -458,7 +458,19 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseAssertStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyAssert)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val left = parseTest(true)
+        var symbol2 = Token(TokenCode.Empty)
+        var right = BaseNode(-1, -1)
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            symbol2 = tokenizer.curSymbol
+            tokenizer.advance()
+            right = parseTest(true)
+        }
+        return AssertStmtNode(start, tokenizer.curIndex, symbol1, left, symbol2, right)
     }
 
     private fun parseCompoundStmt() : BaseNode {
