@@ -28,3 +28,15 @@ class ImportFromNode(
 
 class DottedNameNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>)
     : ListBaseNode(startPos, endPos, nodes, separators)
+
+class ImportAsNamesNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>)
+    : ListBaseNode(startPos, endPos, nodes, separators)
+
+class DottedAsNamesNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>, separators: Array<Token>)
+    : ListBaseNode(startPos, endPos, nodes, separators)
+
+class DottedAsName(startPos: Int, endPos: Int, left: BaseNode, symbol: Token, right: BaseNode)
+    : BinaryNode(startPos, endPos, left, symbol, right)
+
+class ImportAsName(startPos: Int, endPos: Int, left: BaseNode, symbol: Token, right: BaseNode)
+    : BinaryNode(startPos, endPos, left, symbol, right)

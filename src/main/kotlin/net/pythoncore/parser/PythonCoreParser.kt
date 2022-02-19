@@ -393,11 +393,37 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseImportAsNames() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val left = parseImportAsName()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            val separators = mutableListOf<Token>()
+            val nodes = mutableListOf<BaseNode>()
+            nodes.add(left)
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separators.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                nodes.add(parseImportAsName())
+            }
+            return ImportAsNamesNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
+        }
+        return left
     }
 
     private fun parseDottedAsNames() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val left = parseDottedAsName()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            val separators = mutableListOf<Token>()
+            val nodes = mutableListOf<BaseNode>()
+            nodes.add(left)
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separators.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                nodes.add(parseDottedAsName())
+            }
+            return DottedAsNamesNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
+        }
+        return left
     }
 
     private fun parseDottedName() : BaseNode {
