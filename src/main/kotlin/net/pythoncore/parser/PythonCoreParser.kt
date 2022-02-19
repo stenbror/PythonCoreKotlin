@@ -401,7 +401,26 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseDottedName() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting NAME literal in 'import' statement!")
+        }
+        val nameNodes = mutableListOf<LiteralBaseNode>()
+        val separators = mutableListOf<Token>()
+        var nameLiteral = tokenizer.curSymbol
+        tokenizer.advance()
+        nameNodes.add(NameLiteralNode(start, tokenizer.curIndex, nameLiteral))
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyDot) {
+            separators.add(tokenizer.curSymbol)
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting NAME literal in 'import' statement!")
+            }
+            nameLiteral = tokenizer.curSymbol
+            tokenizer.advance()
+            nameNodes.add(NameLiteralNode(start, tokenizer.curIndex, nameLiteral))
+        }
+        return DottedNameNode(start, tokenizer.curIndex, nameNodes.toTypedArray(), separators.toTypedArray())
     }
 
     private fun parseGlobalStmt() : BaseNode {
