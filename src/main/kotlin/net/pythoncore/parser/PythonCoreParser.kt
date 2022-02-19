@@ -577,11 +577,50 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseIfStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyIf)
+        val symbol1 = tokenizer.curSymbol   // if
+        tokenizer.advance()
+        val left = parseNamedExpr()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'if' statement!")
+        }
+        val symbol2 = tokenizer.curSymbol   // :
+        tokenizer.advance()
+        val right = parseSuite()
+        if (tokenizer.curSymbol.tokenKind !in setOf(TokenCode.PyElif, TokenCode.PyElse)) {
+            return IfStmtNode(start, tokenizer.curIndex, symbol1, left, symbol2, right, null, null)
+        }
+        val elifNodes = mutableListOf<BaseNode>()
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyElif) {
+            val start2 = tokenizer.curIndex
+            val symbol3 = tokenizer.curSymbol   // elif
+            tokenizer.advance()
+            val left2 = parseNamedExpr()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'elif' statement!")
+            }
+            val symbol4 = tokenizer.curSymbol
+            tokenizer.advance()
+            val right2 = parseSuite()
+            elifNodes.add(ElifStmtNode(start2, tokenizer.curIndex, symbol3, left2, symbol4, right2))
+        }
+        val elseNode = if (tokenizer.curSymbol.tokenKind == TokenCode.PyElse) parseElseStmt() else null
+        return IfStmtNode(start, tokenizer.curIndex, symbol1, left, symbol2, right, if (elifNodes.isEmpty()) null else elifNodes.toTypedArray(), elseNode)
     }
 
     private fun parseElseStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyElse)
+        val symbol1 = tokenizer.curSymbol   // else
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'else' statement!")
+        }
+        val symbol2 = tokenizer.curSymbol
+        tokenizer.advance()
+        val right = parseSuite()
+        return ElseStmtNode(start, tokenizer.curIndex, symbol1, symbol2, right)
     }
 
     private fun parseWhileStmt() : BaseNode {
