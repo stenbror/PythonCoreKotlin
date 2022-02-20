@@ -671,11 +671,42 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseWithStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyWith)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val items = mutableListOf<BaseNode>()
+        val separators = mutableListOf<Token>()
+        items.add(parseWithItem())
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+            separators.add(tokenizer.curSymbol)
+            tokenizer.advance()
+            items.add(parseWithItem())
+        }
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'with' statement!")
+        }
+        val symbol2 = tokenizer.curSymbol   // :
+        tokenizer.advance()
+        val typeComment = if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+            val hold = tokenizer.curSymbol
+            tokenizer.advance()
+            hold
+        } else null
+        val right = parseSuite()
+        return WithStmtNode(start, tokenizer.curIndex, symbol1, items.toTypedArray(), separators.toTypedArray(), symbol2, typeComment, right )
     }
 
     private fun parseWithItem() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val left = parseTest(true)
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyAs) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            val right = parseBitwiseOr()
+            return WithItemNode(start, tokenizer.curIndex, left, symbol, right)
+        }
+        return left
     }
 
     private fun parseExceptClause() : BaseNode {
