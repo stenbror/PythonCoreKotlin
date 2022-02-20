@@ -1,7 +1,6 @@
 package net.pythoncore.parser
 
 import net.pythoncore.parser.ast.*
-import javax.swing.plaf.synth.SynthButtonUI
 
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private val tokenizer = scanner
@@ -563,8 +562,8 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             TokenCode.PyTry -> parseTryStmt()
             TokenCode.PyWith -> parseWithStmt()
             TokenCode.PyDef,
-            TokenCode.PyMatrice,
-            TokenCode.PyAsync,
+            TokenCode.PyMatrice ->  throw NotImplementedError()
+            TokenCode.PyAsync -> parseAsyncStmt()
             TokenCode.PyClass ->    throw NotImplementedError()
             else -> {
                 throw SyntaxError(tokenizer.curIndex, "Internal parse error in compound statement selector rule!")
@@ -573,7 +572,24 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseAsyncStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyAsync)
+        val symbol1 = tokenizer.curSymbol   // async
+        tokenizer.advance()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyDef ->  throw NotImplementedError()
+            TokenCode.PyFor ->  {
+                val right = parseForStmt()
+                AsyncStmtNode(start, tokenizer.curIndex, symbol1, right)
+            }
+            TokenCode.PyWith -> {
+                val right = parseWithStmt()
+                AsyncStmtNode(start, tokenizer.curIndex, symbol1, right)
+            }
+            else -> {
+                throw SyntaxError(tokenizer.curIndex, "")
+            }
+        }
     }
 
     private fun parseIfStmt() : BaseNode {
