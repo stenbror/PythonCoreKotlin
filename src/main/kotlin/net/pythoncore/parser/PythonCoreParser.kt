@@ -828,36 +828,36 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
 
     private fun parseAtom() : BaseNode {
         val start = tokenizer.curIndex
-        when (tokenizer.curSymbol.tokenKind) {
+        return when (tokenizer.curSymbol.tokenKind) {
             TokenCode.PyFalse -> {
                 val symbol = tokenizer.curSymbol
                 tokenizer.advance()
-                return FalseLiteralNode(start, tokenizer.curIndex, symbol)
+                FalseLiteralNode(start, tokenizer.curIndex, symbol)
             }
             TokenCode.PyNone -> {
                 val symbol = tokenizer.curSymbol
                 tokenizer.advance()
-                return NoneLiteralNode(start, tokenizer.curIndex, symbol)
+                NoneLiteralNode(start, tokenizer.curIndex, symbol)
             }
             TokenCode.PyTrue -> {
                 val symbol = tokenizer.curSymbol
                 tokenizer.advance()
-                return TrueLiteralNode(start, tokenizer.curIndex, symbol)
+                TrueLiteralNode(start, tokenizer.curIndex, symbol)
             }
             TokenCode.PyElipsis -> {
                 val symbol = tokenizer.curSymbol
                 tokenizer.advance()
-                return ElipsisLiteralNode(start, tokenizer.curIndex, symbol)
+                ElipsisLiteralNode(start, tokenizer.curIndex, symbol)
             }
             TokenCode.NAME -> {
                 val symbol = tokenizer.curSymbol
                 tokenizer.advance()
-                return NameLiteralNode(start, tokenizer.curIndex, symbol)
+                NameLiteralNode(start, tokenizer.curIndex, symbol)
             }
             TokenCode.NUMBER -> {
                 val symbol = tokenizer.curSymbol
                 tokenizer.advance()
-                return NumberLiteralNode(start, tokenizer.curIndex, symbol)
+                NumberLiteralNode(start, tokenizer.curIndex, symbol)
             }
             TokenCode.STRING -> {
                 val symbol = tokenizer.curSymbol
@@ -869,12 +869,26 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
                         nodes.add(tokenizer.curSymbol)
                         tokenizer.advance()
                     }
-                    return StringArrayLiteralNode(start, tokenizer.curIndex, nodes.toTypedArray())
+                    StringArrayLiteralNode(start, tokenizer.curIndex, nodes.toTypedArray())
                 }
-                return StringLiteralNode(start, tokenizer.curIndex, symbol)
+                StringLiteralNode(start, tokenizer.curIndex, symbol)
             }
             TokenCode.PyLeftParen -> {
-                throw NotImplementedError()
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = when (tokenizer.curSymbol.tokenKind) {
+                    TokenCode.PyYield -> parseYieldExpr()
+                    TokenCode.PyRightParen ->   null
+                    else -> {
+                        parseTestListComp()
+                    }
+                }
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+                    throw SyntaxError(tokenizer.curIndex, "Expecting ')' in tuple!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                TupleNode(start, tokenizer.curIndex, symbol1, right, symbol2)
             }
             TokenCode.PyLeftBracket -> {
                 throw NotImplementedError()
