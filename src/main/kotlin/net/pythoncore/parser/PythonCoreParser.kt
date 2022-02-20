@@ -1,5 +1,6 @@
 package net.pythoncore.parser
 
+import com.sun.tools.javac.parser.Tokens
 import net.pythoncore.parser.ast.*
 
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
@@ -22,7 +23,18 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     fun parseFuncTypeInput() : BaseNode {
-        throw NotImplementedError()
+        tokenizer.advance()
+        val start = tokenizer.curIndex
+        val left = parseFuncType()
+        val newlines = mutableListOf<Token>()
+        while (tokenizer.curSymbol.tokenKind == TokenCode.Newline) {
+            newlines.add(tokenizer.curSymbol)
+            tokenizer.advance()
+        }
+        if (tokenizer.curSymbol.tokenKind != TokenCode.EOF) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting end of file!")
+        }
+        return FuncTypeInputNode(start, tokenizer.curIndex, left, if (newlines.isEmpty()) null else  newlines.toTypedArray(), tokenizer.curSymbol)
     }
 
     private fun parseDecorator() : BaseNode {
