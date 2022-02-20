@@ -7,6 +7,64 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     private var level = 0 // Loop statement that break and continue can handle
     private var funcLevel = 0 // function allows return statement
 
+    // Block rules below!
+
+    fun parseSingleInput() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    fun parseFileInput() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    fun parseEvalInput() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    fun parseFuncTypeInput() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseDecorator() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseDecorators() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseDecorated() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseAsyncFuncDef() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseFuncDef() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseParameters() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseTypedArgsList() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseTFPDef() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseVarArgsList() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseVFPDef() : BaseNode {
+        throw NotImplementedError()
+    }
+
     // Statement rules below!
 
     private fun parseStmt() : BaseNode {
@@ -1661,4 +1719,17 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         val right = parseTestListStarExpr()
         return YieldNode(start, tokenizer.curIndex, symbol1, right)
     }
+
+    // Func rules below!
+
+    private fun parseFuncType() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    private fun parseTypeList() : BaseNode {
+        throw NotImplementedError()
+    }
+
+    // Match rules below! 3.10 extension
+
 }
