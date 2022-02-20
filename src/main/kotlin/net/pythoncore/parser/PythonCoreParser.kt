@@ -1723,10 +1723,26 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     // Func rules below!
 
     private fun parseFuncType() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyLeftParen)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val left = if (tokenizer.curSymbol.tokenKind == TokenCode.PyRightParen) null else parseTypedList()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ')' in function type!")
+        }
+        val symbol2 = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyArrow) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting '->' in function type!")
+        }
+        val symbol3 = tokenizer.curSymbol
+        tokenizer.advance()
+        val right = parseTest(true)
+        return FuncTypeNode(start, tokenizer.curIndex, symbol1, left, symbol2, symbol3, right)
     }
 
-    private fun parseTypeList() : BaseNode {
+    private fun parseTypedList() : BaseNode {
         throw NotImplementedError()
     }
 
