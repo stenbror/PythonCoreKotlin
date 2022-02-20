@@ -891,7 +891,20 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
                 TupleNode(start, tokenizer.curIndex, symbol1, right, symbol2)
             }
             TokenCode.PyLeftBracket -> {
-                throw NotImplementedError()
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = when (tokenizer.curSymbol.tokenKind) {
+                    TokenCode.PyRightParen ->   null
+                    else -> {
+                        parseTestListComp()
+                    }
+                }
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightBracket) {
+                    throw SyntaxError(tokenizer.curIndex, "Expecting ']' in tuple!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                ListNode(start, tokenizer.curIndex, symbol1, right, symbol2)
             }
             TokenCode.PyLeftCurly -> {
                 throw NotImplementedError()
