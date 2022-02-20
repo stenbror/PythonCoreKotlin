@@ -624,7 +624,19 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseWhileStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyWhile)
+        val symbol1 = tokenizer.curSymbol   // while
+        tokenizer.advance()
+        val left = parseNamedExpr()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'while' statement!")
+        }
+        val symbol2 = tokenizer.curSymbol   // :
+        tokenizer.advance()
+        val right = parseSuite()
+        val next = if (tokenizer.curSymbol.tokenKind == TokenCode.PyElse) parseElseStmt() else null
+        return WhileStmtNode(start, tokenizer.curIndex, symbol1, left, symbol2, right, next)
     }
 
     private fun parseForStmt() : BaseNode {
