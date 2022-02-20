@@ -1,6 +1,5 @@
 package net.pythoncore.parser
 
-import com.sun.tools.javac.parser.Tokens
 import net.pythoncore.parser.ast.*
 
 class PythonCoreParser(scanner: PythonCoreTokenizer) {
@@ -1755,7 +1754,88 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseTypedList() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        var mulOp: Token? = null
+        var left: BaseNode? = null
+        var powerOp: Token? = null
+        var right: BaseNode? = null
+        val nodes = mutableListOf<BaseNode>()
+        val separators = mutableListOf<Token>()
+
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyPower -> {
+                powerOp = tokenizer.curSymbol
+                tokenizer.advance()
+                right = parseTest(true)
+            }
+            TokenCode.PyMul -> {
+                mulOp = tokenizer.curSymbol
+                tokenizer.advance()
+                left = parseTest(true)
+                while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    separators.add(tokenizer.curSymbol)
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                        throw SyntaxError(tokenizer.curIndex, "Unexpected ',' in typed list!")
+                    }
+                    if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.Newline, TokenCode.EOF)) break
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyPower) {
+                        powerOp = tokenizer.curSymbol
+                        tokenizer.advance()
+                        right = parseTest(true)
+                        break
+                    }
+                    else nodes.add(parseTest(true))
+                }
+            }
+            else -> {
+                nodes.add(parseTest(true))
+                outer@ while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    separators.add(tokenizer.curSymbol)
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                        throw SyntaxError(tokenizer.curIndex, "Unexpected ',' in typed list!")
+                    }
+                    if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.Newline, TokenCode.EOF)) break@outer
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyPower) {
+                        powerOp = tokenizer.curSymbol
+                        tokenizer.advance()
+                        right = parseTest(true)
+                        break@outer
+                    } else if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) {
+                        mulOp = tokenizer.curSymbol
+                        tokenizer.advance()
+                        left = parseTest(true)
+                        while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                            separators.add(tokenizer.curSymbol)
+                            tokenizer.advance()
+                            if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                                throw SyntaxError(tokenizer.curIndex, "Unexpected ',' in typed list!")
+                            }
+                            if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.Newline, TokenCode.EOF)) break@outer
+                            if (tokenizer.curSymbol.tokenKind == TokenCode.PyPower) {
+                                powerOp = tokenizer.curSymbol
+                                tokenizer.advance()
+                                right = parseTest(true)
+                                break@outer
+                            }
+                            else nodes.add(parseTest(true))
+                        }
+                    } else nodes.add(parseTest(true))
+                }
+            }
+        }
+
+        return TypeListNode(
+            start,
+            tokenizer.curIndex,
+            mulOp,
+            left,
+            powerOp,
+            right,
+            if (nodes.isEmpty()) null else nodes.toTypedArray(),
+            if (separators.isEmpty()) null else separators.toTypedArray()
+        )
     }
 
     // Match rules below! 3.10 extension

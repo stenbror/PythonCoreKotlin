@@ -17,3 +17,13 @@ class FuncTypeInputNode(startPos: Int, endPos: Int, left: BaseNode, newlines: Ar
         val newlineNodes = newlines
         val symbolEof = eof
 }
+
+class TypeListNode(startPos: Int, endPos: Int, symbol1: Token?, left: BaseNode?, symbol2: Token?, right: BaseNode?, nodes: Array<BaseNode>?, separators: Array<Token>?)
+    : BaseNode(startPos, endPos) {
+        val operatorMul = symbol1
+        val leftNode = left
+        val operatorPower = symbol2
+        val rightNode = right
+        val elementNodes = nodes
+        val separatorNodes = separators
+}
