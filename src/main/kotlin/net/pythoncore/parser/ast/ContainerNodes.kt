@@ -39,3 +39,6 @@ class DictionaryContainerNode(startPos: Int, endPos: Int, nodes: Array<BaseNode>
 
 class KeyValueNode(startPos: Int, endPos: Int, key: BaseNode, symbol: Token, value: BaseNode)
     : BinaryNode(startPos, endPos, key, symbol, value)
+
+class PowerKeyNode(startPos: Int, endPos: Int, symbol: Token, right: BaseNode)
+    : UnaryNode(startPos, endPos, symbol, right)

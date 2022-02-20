@@ -1488,8 +1488,103 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
 
     private fun parseDictorSetMaker() : BaseNode {
         val start = tokenizer.curIndex
+        var isDictionary = true
+        var key: BaseNode? = null
+        var symbol : Token? = null
+        var value: BaseNode? = null
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyMul -> {
+                isDictionary = false
+                key = parseStarExpr()
+            }
+            TokenCode.PyPower -> {
+                val start2 = tokenizer.curIndex
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = parseTest(true)
+                key = PowerKeyNode(start2, tokenizer.curIndex, symbol1, right)
+            }
+            else -> {
+                key = parseTest(true)
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyColon) {
+                    symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    value = parseTest(true)
+                }
+                else {
+                    isDictionary = false
+                }
+            }
+        }
 
-        throw NotImplementedError()
+        if (isDictionary) {
+            val nodes = mutableListOf<BaseNode>()
+            val separator = mutableListOf<Token>()
+            nodes.add(if (key is PowerKeyNode) key else {
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+                    throw SyntaxError(tokenizer.curIndex, "Expecting ':' in dictionary entry!")
+                }
+                symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                value = parseTest(true)
+                KeyValueNode(start, tokenizer.curIndex, key, symbol, value)
+            })
+            if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyFor, TokenCode.PyAsync)) {
+                nodes.add(parseCompFor())
+                return DictionaryContainerNode(start, tokenizer.curIndex, nodes.toTypedArray(), separator.toTypedArray())
+            }
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separator.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                key = null; symbol = null; value = null;
+                when (tokenizer.curSymbol.tokenKind) {
+                    TokenCode.PyComma -> {
+                        throw SyntaxError(tokenizer.curIndex, "Unexpected ',' in dictionary!")
+                    }
+                    TokenCode.PyRightCurly -> break
+                    TokenCode.PyPower -> {
+                        val start2 = tokenizer.curIndex
+                        val symbol1 = tokenizer.curSymbol
+                        tokenizer.advance()
+                        val right = parseTest(true)
+                        nodes.add(PowerKeyNode(start2, tokenizer.curIndex, symbol1, right))
+                    }
+                    else -> {
+                        key = parseTest(true)
+                        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+                            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in dictionary entry!")
+                        }
+                        symbol = tokenizer.curSymbol
+                        tokenizer.advance()
+                        value = parseTest(true)
+                        nodes.add(KeyValueNode(start, tokenizer.curIndex, key, symbol, value))
+                    }
+                }
+            }
+            return DictionaryContainerNode(start, tokenizer.curIndex, nodes.toTypedArray(), separator.toTypedArray())
+        } else {
+            val nodes = mutableListOf<BaseNode>()
+            val separator = mutableListOf<Token>()
+            nodes.add(key)
+            if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyFor, TokenCode.PyAsync)) {
+                nodes.add(parseCompFor())
+                return SetContainerNode(start, tokenizer.curIndex, nodes.toTypedArray(), separator.toTypedArray())
+            }
+            while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                separator.add(tokenizer.curSymbol)
+                tokenizer.advance()
+                when (tokenizer.curSymbol.tokenKind) {
+                    TokenCode.PyComma -> {
+                        throw SyntaxError(tokenizer.curIndex, "Unexpected ',' in set!")
+                    }
+                    TokenCode.PyRightCurly -> break
+                    else -> {
+                        nodes.add(if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseBitwiseOr() else parseTest(true))
+                    }
+                }
+            }
+            return SetContainerNode(start, tokenizer.curIndex, nodes.toTypedArray(), separator.toTypedArray())
+        }
     }
 
     private fun parseCompIter() : BaseNode {
