@@ -640,7 +640,30 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseForStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyFor)
+        val symbol1 = tokenizer.curSymbol   // for
+        tokenizer.advance()
+        val left = parseExprList()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyIn) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting 'in' in 'while' statement!")
+        }
+        val symbol2 = tokenizer.curSymbol   // in
+        tokenizer.advance()
+        val right = parseTestList()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'for' statement!")
+        }
+        val symbol3 = tokenizer.curSymbol   // :
+        tokenizer.advance()
+        val typeComment = if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+            val hold = tokenizer.curSymbol
+            tokenizer.advance()
+            hold
+        } else null
+        val next = parseSuite()
+        val elseNode = if (tokenizer.curSymbol.tokenKind == TokenCode.PyElse) parseElseStmt() else null
+        return ForStmtNode(start, tokenizer.curIndex, symbol1, left, symbol2, right, symbol3, typeComment, next, elseNode)
     }
 
     private fun parseTryStmt() : BaseNode {
