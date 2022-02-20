@@ -894,20 +894,43 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
                 val symbol1 = tokenizer.curSymbol
                 tokenizer.advance()
                 val right = when (tokenizer.curSymbol.tokenKind) {
-                    TokenCode.PyRightParen ->   null
+                    TokenCode.PyRightBracket ->   null
                     else -> {
                         parseTestListComp()
                     }
                 }
                 if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightBracket) {
-                    throw SyntaxError(tokenizer.curIndex, "Expecting ']' in tuple!")
+                    throw SyntaxError(tokenizer.curIndex, "Expecting ']' in list!")
                 }
                 val symbol2 = tokenizer.curSymbol
                 tokenizer.advance()
                 ListNode(start, tokenizer.curIndex, symbol1, right, symbol2)
             }
             TokenCode.PyLeftCurly -> {
-                throw NotImplementedError()
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = when (tokenizer.curSymbol.tokenKind) {
+                    TokenCode.PyRightCurly ->   null
+                    else -> {
+                        parseDictorSetMaker()
+                    }
+                }
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightBracket) {
+                    if (right is DictionaryContainerNode)
+                        throw SyntaxError(tokenizer.curIndex, "Expecting '}' in dictionary!")
+                    else if (right is SetContainerNode)
+                        throw SyntaxError(tokenizer.curIndex, "Expecting '}' in set!")
+                    else
+                        throw SyntaxError(tokenizer.curIndex, "Internal parse error in dictionary/set rule!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                if (right is DictionaryContainerNode)
+                    DictionaryNode(start, tokenizer.curIndex, symbol1, right, symbol2)
+                else if (right is SetContainerNode)
+                    SetNode(start, tokenizer.curIndex, symbol1, right, symbol2)
+                else
+                    DictionaryNode(start, tokenizer.curIndex, symbol1, right, symbol2)
             }
             else -> {
                 throw SyntaxError(tokenizer.curIndex, "Illegal literal!")
@@ -1464,6 +1487,8 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseDictorSetMaker() : BaseNode {
+        val start = tokenizer.curIndex
+
         throw NotImplementedError()
     }
 
