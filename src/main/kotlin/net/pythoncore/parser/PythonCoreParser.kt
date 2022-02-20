@@ -683,7 +683,58 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseTryStmt() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyTry)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'try' statement!")
+        }
+        val symbol2 = tokenizer.curSymbol   // :
+        tokenizer.advance()
+        val left = parseSuite()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyFinally) {
+            val start2 = tokenizer.curIndex
+            val symbol3 = tokenizer.curSymbol
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'finally' statement!")
+            }
+            val symbol4 = tokenizer.curSymbol   // :
+            tokenizer.advance()
+            val right = parseSuite()
+            val fin = FinallyStmtNode(start2, tokenizer.curIndex, symbol3, symbol4, right)
+            return TryStmtNode(start, tokenizer.curIndex, symbol1, symbol2, left, null, null, fin)
+        }
+        val nodes = mutableListOf<BaseNode>()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyExcept) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting 'except' or 'finally' in 'try' statement!")
+        }
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyExcept) {
+            val start3 = tokenizer.curIndex
+            val left2 = parseExceptClause()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'except' statement!")
+            }
+            val symbol5 = tokenizer.curSymbol
+            tokenizer.advance()
+            val right2 = parseSuite()
+            nodes.add(ExceptStmtNode(start3, tokenizer.curIndex, left2, symbol5, right2))
+        }
+        val elseNode = if (tokenizer.curSymbol.tokenKind == TokenCode.PyElse) parseElseStmt() else null
+        val fin = if (tokenizer.curSymbol.tokenKind == TokenCode.PyFinally) {
+            val start3 = tokenizer.curIndex
+            val symbol8 = tokenizer.curSymbol
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'finally' statement!")
+            }
+            val symbol9 = tokenizer.curSymbol   // :
+            tokenizer.advance()
+            val right3 = parseSuite()
+            FinallyStmtNode(start3, tokenizer.curIndex, symbol8, symbol9, right3)
+        } else null
+        return TryStmtNode(start, tokenizer.curIndex, symbol1, symbol2, left, nodes.toTypedArray(), elseNode, fin)
     }
 
     private fun parseWithStmt() : BaseNode {
