@@ -801,7 +801,27 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseSuite() : BaseNode {
-        throw NotImplementedError()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.Newline ->    {
+                val start = tokenizer.curIndex
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.Indent) {
+                    throw SyntaxError(tokenizer.curIndex, "Expecting indent in code block!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                val nodes = mutableListOf<BaseNode>()
+                nodes.add(parseStmt())
+                while (tokenizer.curSymbol.tokenKind != TokenCode.Dedent) {
+                    nodes.add(parseStmt())
+                }
+                val symbol3 = tokenizer.curSymbol
+                tokenizer.advance()
+                SuiteNode(start, tokenizer.curIndex, symbol1, symbol2, nodes.toTypedArray(), symbol3)
+            }
+            else -> parseSimpleStmt()
+        }
     }
 
     // Expression rules below!
