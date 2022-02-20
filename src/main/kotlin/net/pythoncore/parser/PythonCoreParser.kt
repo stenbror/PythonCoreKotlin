@@ -710,7 +710,27 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseExceptClause() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyExcept)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        var left : BaseNode? = null
+        var symbol2 : Token? = null
+        var right : BaseNode? = null
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            left = parseTest(true)
+            if (tokenizer.curSymbol.tokenKind == TokenCode.PyAs) {
+                symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+                    throw SyntaxError(tokenizer.curIndex, "Expecting NAME literal after 'as' in except clause!")
+                }
+                val nameLiteral = tokenizer.curSymbol
+                tokenizer.advance()
+                right = NameLiteralNode(start, tokenizer.curIndex, nameLiteral)
+            }
+        }
+        return ExceptClauseNode(start, tokenizer.curIndex, symbol1, left, symbol2, right)
     }
 
     private fun parseSuite() : BaseNode {
