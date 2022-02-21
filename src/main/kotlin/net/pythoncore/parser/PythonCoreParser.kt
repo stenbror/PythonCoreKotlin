@@ -151,7 +151,38 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseClassDef() : BaseNode {
-        throw NotImplementedError()
+        // classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyClass)
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting NAME of 'class' declaration!")
+        }
+        val name = tokenizer.curSymbol
+        tokenizer.advance()
+        var symbol2: Token? = null
+        var left: BaseNode? = null
+        var symbol3: Token? = null
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyLeftParen) {
+            symbol2 = tokenizer.curSymbol
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+                left = parseArgList()
+            }
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting ')' in 'class' declaration!")
+            }
+            symbol3 = tokenizer.curSymbol
+            tokenizer.advance()
+        }
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in 'class' dec larationb!")
+        }
+        val symbol4 = tokenizer.curSymbol   // :
+        tokenizer.advance()
+        val right = parseSuite()
+        return ClassNode(start, tokenizer.curIndex, symbol, name, symbol2, left, symbol3, symbol4, right)
     }
 
     private fun parseAsyncFuncDef() : BaseNode {
@@ -1401,7 +1432,7 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         tokenizer.advance()
         var left = BaseNode(-1, -1)
         if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
-            // left = parseVarArgsList()
+            left = parseVarArgsList()
         }
         if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
             throw SyntaxError(tokenizer.curIndex, "Expecting ':' in lambda expression!")
