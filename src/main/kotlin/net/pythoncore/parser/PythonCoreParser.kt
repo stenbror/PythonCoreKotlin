@@ -90,7 +90,32 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseDecorator() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyMatrice)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val left = parseDottedName()
+        var symbol2: Token? = null
+        var right: BaseNode? = null
+        var symbol3: Token? = null
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyLeftParen) {
+            symbol2 = tokenizer.curSymbol
+            tokenizer.advance()
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+                right = parseArgList()
+            }
+            if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+                throw SyntaxError(tokenizer.curIndex, "Expecting ')' in decorator!")
+            }
+            symbol3 = tokenizer.curSymbol
+            tokenizer.advance()
+        }
+        if (tokenizer.curSymbol.tokenKind != TokenCode.Newline) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting NEWLINE in decorator!")
+        }
+        val symbol4 = tokenizer.curSymbol
+        tokenizer.advance()
+        return DecoratorNode(start, tokenizer.curIndex, symbol1, left, symbol2, right, symbol3, symbol4)
     }
 
     private fun parseDecorators() : BaseNode {
