@@ -119,7 +119,12 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseDecorators() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        val nodes = mutableListOf<BaseNode>()
+        while (tokenizer.curSymbol.tokenKind == TokenCode.PyMatrice) {
+            nodes.add(parseDecorator())
+        }
+        return DecoratorsNode(start, tokenizer.curIndex, nodes.toTypedArray())
     }
 
     private fun parseDecorated() : BaseNode {
