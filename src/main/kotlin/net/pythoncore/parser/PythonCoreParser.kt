@@ -10,7 +10,36 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     // Block rules below!
 
     fun parseSingleInput() : BaseNode {
-        throw NotImplementedError()
+        tokenizer.advance()
+        val start = tokenizer.curIndex
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.Newline -> {
+                val newline = tokenizer.curSymbol
+                tokenizer.advance()
+                SingleInputNode(start, tokenizer.curIndex, newline, BaseNode(-1, -1))
+            }
+            TokenCode.PyIf,
+            TokenCode.PyWhile,
+            TokenCode.PyFor,
+            TokenCode.PyTry,
+            TokenCode.PyWith,
+            TokenCode.PyDef,
+            TokenCode.PyClass,
+            TokenCode.PyMatrice,
+            TokenCode.PyAsync -> {
+                val right = parseCompoundStmt()
+                if (tokenizer.curSymbol.tokenKind != TokenCode.Newline) {
+                    throw SyntaxError(tokenizer.curIndex, "Missing NEWLINE after statement!")
+                }
+                val newline = tokenizer.curSymbol
+                tokenizer.advance()
+                SingleInputNode(start, tokenizer.curIndex, newline, right)
+            }
+            else -> {
+                val right = parseSimpleStmt()
+                SingleInputNode(start, tokenizer.curIndex, Token(TokenCode.Empty), right)
+            }
+        }
     }
 
     fun parseFileInput() : BaseNode {
