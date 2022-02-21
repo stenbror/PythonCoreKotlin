@@ -43,7 +43,20 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     fun parseFileInput() : BaseNode {
-        throw NotImplementedError()
+        tokenizer.advance()
+        val start = tokenizer.curIndex
+        val nodes = mutableListOf<BaseNode>()
+        val newlines = mutableListOf<Token>()
+        while (tokenizer.curSymbol.tokenKind != TokenCode.EOF) {
+            if (tokenizer.curSymbol.tokenKind == TokenCode.Newline) {
+                newlines.add(tokenizer.curSymbol)
+                tokenizer.advance()
+            }
+            else {
+                nodes.add(parseStmt())
+            }
+        }
+        return FileInputNode(start, tokenizer.curIndex, nodes.toTypedArray(), newlines.toTypedArray(), tokenizer.curSymbol)
     }
 
     fun parseEvalInput() : BaseNode {
