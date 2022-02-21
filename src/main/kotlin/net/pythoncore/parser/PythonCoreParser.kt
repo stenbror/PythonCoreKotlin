@@ -60,7 +60,18 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     fun parseEvalInput() : BaseNode {
-        throw NotImplementedError()
+        tokenizer.advance()
+        val start = tokenizer.curIndex
+        val newlines = mutableListOf<Token>()
+        val right = parseTestList()
+        while (tokenizer.curSymbol.tokenKind == TokenCode.Newline) {
+            newlines.add(tokenizer.curSymbol)
+            tokenizer.advance()
+        }
+        if (tokenizer.curSymbol.tokenKind != TokenCode.EOF) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting EOF!")
+        }
+        return EvalInputNode(start, tokenizer.curIndex, right, newlines.toTypedArray(), tokenizer.curSymbol)
     }
 
     fun parseFuncTypeInput() : BaseNode {
