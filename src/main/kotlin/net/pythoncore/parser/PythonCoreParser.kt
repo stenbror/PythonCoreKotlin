@@ -128,6 +128,29 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseDecorated() : BaseNode {
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyMatrice)
+        val left = parseDecorators()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyClass -> {
+                val right = parseClassDef()
+                DecoratedNode(start, tokenizer.curIndex, left, right)
+            }
+            TokenCode.PyDef -> {
+                val right = parseFuncDef()
+                DecoratedNode(start, tokenizer.curIndex, left, right)
+            }
+            TokenCode.PyAsync -> {
+                val right = parseAsyncFuncDef()
+                DecoratedNode(start, tokenizer.curIndex, left, right)
+            }
+            else -> {
+                throw SyntaxError(tokenizer.curIndex, "Expecting 'class', 'def' or 'async' after decorators!")
+            }
+        }
+    }
+
+    private fun parseClassDef() : BaseNode {
         throw NotImplementedError()
     }
 
