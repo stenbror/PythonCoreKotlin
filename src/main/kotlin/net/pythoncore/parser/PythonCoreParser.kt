@@ -186,7 +186,15 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseAsyncFuncDef() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyAsync)
+        var symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyDef) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting 'def' after 'async' in function declaration!")
+        }
+        val right = parseFuncDef()
+        return AsyncStmtNode(start, tokenizer.curIndex, symbol, right)
     }
 
     private fun parseFuncDef() : BaseNode {
