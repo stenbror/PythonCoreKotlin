@@ -218,7 +218,13 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseVFPDef() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting literal Name in argument!")
+        }
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        return NameLiteralNode(start, tokenizer.curIndex, symbol)
     }
 
     // Statement rules below!
