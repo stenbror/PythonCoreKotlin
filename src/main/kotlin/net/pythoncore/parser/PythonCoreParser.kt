@@ -210,7 +210,20 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseTFPDef() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting literal Name in argument!")
+        }
+        val symbol = tokenizer.curSymbol
+        tokenizer.advance()
+        val left = NameLiteralNode(start, tokenizer.curIndex, symbol)
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyColon) {
+            val symbolColon = tokenizer.curSymbol
+            tokenizer.advance()
+            val right = parseTest(true)
+            return TFPDefNode(start, tokenizer.curIndex, left, symbolColon, right)
+        }
+        return left
     }
 
     private fun parseVarArgsList() : BaseNode {
