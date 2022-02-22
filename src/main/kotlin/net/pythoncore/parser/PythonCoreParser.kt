@@ -198,11 +198,51 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseFuncDef() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        assert(tokenizer.curSymbol.tokenKind == TokenCode.PyDef)
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        if (tokenizer.curSymbol.tokenKind != TokenCode.NAME) {
+            throw SyntaxError(tokenizer.curIndex, "Missing name of function!")
+        }
+        val name = tokenizer.curSymbol
+        tokenizer.advance()
+        val para = parseParameters()
+        var symbol2: Token? = null
+        var left: BaseNode? = null
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyArrow) {
+            symbol2 = tokenizer.curSymbol
+            tokenizer.advance()
+            left = parseTest(true)
+        }
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ':' in function declaration!")
+        }
+        val symbol3 = tokenizer.curSymbol
+        tokenizer.advance()
+        var typeCom: Token? = null
+        if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+            typeCom = tokenizer.curSymbol
+            tokenizer.advance()
+        }
+        val right = parseFuncBodySuite()
+        return FuncDefNode(start, tokenizer.curIndex, symbol1, name, para, symbol2, left, symbol3, typeCom, right)
     }
 
     private fun parseParameters() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyLeftParen) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting '(' in parameters of function declaration!")
+        }
+        val symbol1 = tokenizer.curSymbol
+        tokenizer.advance()
+        val right = if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) parseTypedArgsList() else null
+        if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightParen) {
+            throw SyntaxError(tokenizer.curIndex, "Expecting ')' in parameters of function declaration!")
+        }
+        val symbol2 = tokenizer.curSymbol
+        tokenizer.advance()
+        return ParametersNode(start, tokenizer.curIndex, symbol1, right, symbol2)
     }
 
     private fun parseTypedArgsList() : BaseNode {
@@ -1896,6 +1936,10 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     // Func rules below!
+
+    private fun parseFuncBodySuite() : BaseNode {
+        throw NotImplementedError()
+    }
 
     private fun parseFuncType() : BaseNode {
         val start = tokenizer.curIndex
