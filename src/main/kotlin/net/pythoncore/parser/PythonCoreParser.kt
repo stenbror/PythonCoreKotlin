@@ -1938,7 +1938,38 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     // Func rules below!
 
     private fun parseFuncBodySuite() : BaseNode {
-        throw NotImplementedError()
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.Newline ->    {
+                val start = tokenizer.curIndex
+                val symbol1 = tokenizer.curSymbol
+                tokenizer.advance()
+                var tc: Token? = null
+                var newline: Token? = null
+                if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                    tc = tokenizer.curSymbol
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind != TokenCode.Newline) {
+                        throw SyntaxError(tokenizer.curIndex, "Expecting Newline after type comment in function declaration!")
+                    }
+                    newline = tokenizer.curSymbol
+                    tokenizer.advance()
+                }
+                if (tokenizer.curSymbol.tokenKind != TokenCode.Indent) {
+                    throw SyntaxError(tokenizer.curIndex, "Expecting indent in code block!")
+                }
+                val symbol2 = tokenizer.curSymbol
+                tokenizer.advance()
+                val nodes = mutableListOf<BaseNode>()
+                nodes.add(parseStmt())
+                while (tokenizer.curSymbol.tokenKind != TokenCode.Dedent) {
+                    nodes.add(parseStmt())
+                }
+                val symbol3 = tokenizer.curSymbol
+                tokenizer.advance()
+                FuncSuiteNode(start, tokenizer.curIndex, symbol1, tc, newline, symbol2, nodes.toTypedArray(), symbol3)
+            }
+            else -> parseSimpleStmt()
+        }
     }
 
     private fun parseFuncType() : BaseNode {
