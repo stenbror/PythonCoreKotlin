@@ -245,33 +245,151 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return ParametersNode(start, tokenizer.curIndex, symbol1, right, symbol2)
     }
 
-    private fun parseTypedArgAssignNode(isTypedTokenPossible: Boolean) : BaseNode {
+    private fun parseTypedArgument() : BaseNode {
         val start = tokenizer.curIndex
-        val tc = if(isTypedTokenPossible && tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
-            val symbol = tokenizer.curSymbol
-            tokenizer.advance()
-            symbol
-        } else null
         val left = parseTFPDef()
         if (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
             val right = parseTest(true)
-            TypedArgAssignNodes(start, tokenizer.curIndex, tc, left, symbol, right)
+            return TypedArgAssignNodes(start, tokenizer.curIndex, left, symbol, right)
         }
-        else if (tc == null) return left
-        return TypedArgAssignNodes(start, tokenizer.curIndex, tc, left, null, null)
+        return left
     }
 
     private fun parseTypedArgsList() : BaseNode {
         val start = tokenizer.curIndex
         var mulOp: Token? = null
         var mulNode: BaseNode? = null
+        var tcMul: Token? = null
         var powerOp: Token? = null
         var powerNode: BaseNode? = null
-        var slashOp: Token? = null
+        var tcPower: Token? = null
+        var slash: Token? = null
         val nodes = mutableListOf<BaseNode>()
         val sepOp = mutableListOf<Token>()
+        val tcOp = mutableListOf<Token>()
+
+        when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyMul -> {
+                mulOp = tokenizer.curSymbol
+                tokenizer.advance()
+                mulNode = parseTFPDef()
+                while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                        tcOp.add(tokenizer.curSymbol)
+                        tokenizer.advance()
+                        if (tokenizer.curSymbol.tokenKind == TokenCode.PyPower) {
+                            powerOp = tokenizer.curSymbol
+                            tokenizer.advance()
+                            powerNode = parseTFPDef()
+                            if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                                sepOp.add(tokenizer.curSymbol)
+                                tokenizer.advance()
+                                if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                                    tcOp.add(tokenizer.curSymbol)
+                                    tokenizer.advance()
+                                }
+                            }
+                            break
+                        }
+                        nodes.add(parseTypedArgument())
+                    }
+                }
+            }
+            TokenCode.PyPower -> {
+                powerOp = tokenizer.curSymbol
+                tokenizer.advance()
+                powerNode = parseTFPDef()
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    sepOp.add(tokenizer.curSymbol)
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                        tcOp.add(tokenizer.curSymbol)
+                        tokenizer.advance()
+                    }
+                }
+            }
+            else -> {
+                nodes.add(parseTypedArgument())
+                while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    sepOp.add(tokenizer.curSymbol)
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                        tcOp.add(tokenizer.curSymbol)
+                        tokenizer.advance()
+                    }
+                    if (tokenizer.curSymbol.tokenKind in setOf<TokenCode>(TokenCode.PyMul, TokenCode.PyPower, TokenCode.PyRightParen, TokenCode.PyDiv)) break
+                    nodes.add(parseTypedArgument())
+                }
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyDiv) {
+                    slash = tokenizer.curSymbol
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                        tcOp.add(tokenizer.curSymbol)
+                        tokenizer.advance()
+                    }
+                    while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                        sepOp.add(tokenizer.curSymbol)
+                        tokenizer.advance()
+                        if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                            tcOp.add(tokenizer.curSymbol)
+                            tokenizer.advance()
+                        }
+                        if (tokenizer.curSymbol.tokenKind in setOf<TokenCode>(TokenCode.PyMul, TokenCode.PyPower, TokenCode.PyRightParen)) break
+                        nodes.add(parseTypedArgument())
+                    }
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                        tcOp.add(tokenizer.curSymbol)
+                        tokenizer.advance()
+                    }
+                }
+                when (tokenizer.curSymbol.tokenKind) {
+                    TokenCode.PyMul -> {
+                        mulOp = tokenizer.curSymbol
+                        tokenizer.advance()
+                        mulNode = parseTFPDef()
+                        while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                            if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                                tcOp.add(tokenizer.curSymbol)
+                                tokenizer.advance()
+                                if (tokenizer.curSymbol.tokenKind == TokenCode.PyPower) {
+                                    powerOp = tokenizer.curSymbol
+                                    tokenizer.advance()
+                                    powerNode = parseTFPDef()
+                                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                                        sepOp.add(tokenizer.curSymbol)
+                                        tokenizer.advance()
+                                        if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                                            tcOp.add(tokenizer.curSymbol)
+                                            tokenizer.advance()
+                                        }
+                                    }
+                                    break
+                                }
+                                nodes.add(parseTypedArgument())
+                            }
+                        }
+                    }
+                    TokenCode.PyPower -> {
+                        powerOp = tokenizer.curSymbol
+                        tokenizer.advance()
+                        powerNode = parseTFPDef()
+                        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                            sepOp.add(tokenizer.curSymbol)
+                            tokenizer.advance()
+                            if (tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+                                tcOp.add(tokenizer.curSymbol)
+                                tokenizer.advance()
+                            }
+                         }
+                    }
+                    else -> {
+
+                    }
+                }
+            }
+        }
 
         return TypedArgsListNode(
             start,
@@ -280,9 +398,11 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             mulNode,
             powerOp,
             powerNode,
-            slashOp,
+            slash,
             if (nodes.isEmpty()) null else nodes.toTypedArray(),
-            if(sepOp.isEmpty()) null else sepOp.toTypedArray())
+            if (sepOp.isEmpty()) null else sepOp.toTypedArray(),
+            if (tcOp.isEmpty()) null else tcOp.toTypedArray()
+        )
     }
 
     private fun parseTFPDef() : BaseNode {
