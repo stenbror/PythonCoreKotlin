@@ -267,7 +267,129 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
     }
 
     private fun parseVarArgsList() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        return when (tokenizer.curSymbol.tokenKind) {
+            TokenCode.PyPower -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val right = parseVFPDef()
+                val separator = if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    val symbol2 = tokenizer.curSymbol
+                    tokenizer.advance()
+                    mutableListOf<Token>(symbol2).toTypedArray()
+                } else null
+                VarArgsListNode(start, tokenizer.curIndex,null, null, symbol, right, null, separator)
+            }
+            TokenCode.PyMul -> {
+                val symbol = tokenizer.curSymbol
+                tokenizer.advance()
+                val mulNode = parseVFPDef()
+                val nodes = mutableListOf<BaseNode>()
+                val sepOp = mutableListOf<Token>()
+                var powerOp: Token? = null
+                var powerNode: BaseNode? = null
+                while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                    sepOp.add(tokenizer.curSymbol)
+                    tokenizer.advance()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyPower) {
+                        powerOp = tokenizer.curSymbol
+                        tokenizer.advance()
+                        powerNode = parseVFPDef()
+                        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                            sepOp.add(tokenizer.curSymbol)
+                            tokenizer.advance()
+                        }
+                        break
+                    }
+                    val left = parseVFPDef()
+                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
+                        val symbol3 = tokenizer.curSymbol
+                        tokenizer.advance()
+                        val right = parseTest(true)
+                        nodes.add(VarArgAssignNode(start, tokenizer.curIndex, left, symbol3, right))
+                    }
+                    else {
+                        nodes.add(left)
+                    }
+                }
+                VarArgsListNode(start, tokenizer.curIndex, symbol, mulNode, powerOp, powerNode, if (nodes.isEmpty()) null else nodes.toTypedArray(), if (sepOp.isEmpty()) null else sepOp.toTypedArray())
+            }
+            else -> {
+                var mulOp: Token? = null
+                var mulNode: BaseNode? = null
+                var powerOp: Token? = null
+                var powerNode: BaseNode? = null
+                val nodes = mutableListOf<BaseNode>()
+                val sepOp = mutableListOf<Token>()
+                var left = parseVFPDef()
+                if (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
+                    val symbol = tokenizer.curSymbol
+                    tokenizer.advance()
+                    val right = parseTest(true)
+                    nodes.add(VarArgAssignNode(start, tokenizer.curIndex, left, symbol, right))
+                }
+                else {
+                    nodes.add(left)
+                    outer@ while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                        sepOp.add(tokenizer.curSymbol)
+                        tokenizer.advance()
+                        when (tokenizer.curSymbol.tokenKind) {
+                            TokenCode.PyMul -> {
+                                mulOp = tokenizer.curSymbol
+                                tokenizer.advance()
+                                mulNode = parseVFPDef()
+                                while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                                    sepOp.add(tokenizer.curSymbol)
+                                    tokenizer.advance()
+                                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyPower) {
+                                        powerOp = tokenizer.curSymbol
+                                        tokenizer.advance()
+                                        powerNode = parseVFPDef()
+                                        if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                                            sepOp.add(tokenizer.curSymbol)
+                                            tokenizer.advance()
+                                        }
+                                        break@outer
+                                    }
+                                    left = parseVFPDef()
+                                    if (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
+                                        val symbol3 = tokenizer.curSymbol
+                                        tokenizer.advance()
+                                        val right = parseTest(true)
+                                        nodes.add(VarArgAssignNode(start, tokenizer.curIndex, left, symbol3, right))
+                                    } else {
+                                        nodes.add(left)
+                                    }
+                                }
+                            }
+                            TokenCode.PyPower -> {
+                                powerOp = tokenizer.curSymbol
+                                tokenizer.advance()
+                                powerNode = parseVFPDef()
+                                if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
+                                    sepOp.add(tokenizer.curSymbol)
+                                    tokenizer.advance()
+                                }
+                                break
+                            }
+                            else -> {
+                                left = parseVFPDef()
+                                if (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
+                                    val symbol = tokenizer.curSymbol
+                                    tokenizer.advance()
+                                    val right = parseTest(true)
+                                    nodes.add(VarArgAssignNode(start, tokenizer.curIndex, left, symbol, right))
+                                }
+                                else {
+                                    nodes.add(left)
+                                }
+                            }
+                        }
+                    }
+                }
+                VarArgsListNode(start, tokenizer.curIndex, mulOp, mulNode, powerOp, powerNode, if (nodes.isEmpty()) null else nodes.toTypedArray(), if (sepOp.isEmpty()) null else sepOp.toTypedArray())
+            }
+        }
     }
 
     private fun parseVFPDef() : BaseNode {

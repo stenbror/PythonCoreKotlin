@@ -15,7 +15,8 @@ class TypedArgsListNode(
     powerOp: Token?,
     powerNode: BaseNode?,
     slashOp: Token?,
-    nodes: Array<BaseNode>?
+    nodes: Array<BaseNode>?,
+    separators: Array<Token>?
 )
     : BaseNode(startPos, endPos) {
 
@@ -25,4 +26,5 @@ class TypedArgsListNode(
     val powerChildNode = powerNode
     val slashOperator = slashOp
     val elementNodes = nodes
+    val separatorsOperator = separators
 }

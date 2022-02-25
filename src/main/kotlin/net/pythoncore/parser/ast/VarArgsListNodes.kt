@@ -2,7 +2,7 @@ package net.pythoncore.parser.ast
 
 import net.pythoncore.parser.Token
 
-class VarArgAssignNodes(startPos: Int, endPos: Int, left: BaseNode, symbol: Token, right: BaseNode)
+class VarArgAssignNode(startPos: Int, endPos: Int, left: BaseNode, symbol: Token, right: BaseNode)
     : BinaryNode(startPos, endPos, left, symbol, right)
 
 class VarArgsListNode(
@@ -12,7 +12,8 @@ class VarArgsListNode(
     mulNode: BaseNode?,
     powerOp: Token?,
     powerNode: BaseNode?,
-    nodes: Array<BaseNode>?
+    nodes: Array<BaseNode>?,
+    separators: Array<Token>?
 )
     : BaseNode(startPos, endPos) {
 
@@ -21,4 +22,5 @@ class VarArgsListNode(
         val powerOperator = powerOp
         val powerChildNode = powerNode
         val elementNodes = nodes
+        val separatorOperators = separators
 }
