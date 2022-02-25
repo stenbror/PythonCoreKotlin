@@ -35,6 +35,11 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
                 tokenizer.advance()
                 SingleInputNode(start, tokenizer.curIndex, newline, right)
             }
+            TokenCode.NAME -> {
+                val token = tokenizer.curSymbol as NameToken
+                if (token.textData == "match") parseCompoundStmt()
+                else parseSimpleStmt()
+            }
             else -> {
                 val right = parseSimpleStmt()
                 SingleInputNode(start, tokenizer.curIndex, Token(TokenCode.Empty), right)
@@ -572,6 +577,11 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             TokenCode.PyClass,
             TokenCode.PyMatrice -> {
                 parseCompoundStmt()
+            }
+            TokenCode.NAME -> {
+                val token = tokenizer.curSymbol as NameToken
+                if (token.textData == "match") parseCompoundStmt()
+                else parseSimpleStmt()
             }
             else -> {
                 parseSimpleStmt()
@@ -1112,10 +1122,14 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             TokenCode.PyFor -> parseForStmt()
             TokenCode.PyTry -> parseTryStmt()
             TokenCode.PyWith -> parseWithStmt()
-            TokenCode.PyDef,
-            TokenCode.PyMatrice ->  throw NotImplementedError()
+            TokenCode.PyDef -> parseFuncDef()
+            TokenCode.PyMatrice ->  parseDecorated()
             TokenCode.PyAsync -> parseAsyncStmt()
-            TokenCode.PyClass ->    throw NotImplementedError()
+            TokenCode.PyClass ->    parseClassDef()
+            TokenCode.NAME -> {
+                assert((tokenizer.curSymbol as NameToken).textData == "match")
+                throw NotImplementedError()
+            }
             else -> {
                 throw SyntaxError(tokenizer.curIndex, "Internal parse error in compound statement selector rule!")
             }
