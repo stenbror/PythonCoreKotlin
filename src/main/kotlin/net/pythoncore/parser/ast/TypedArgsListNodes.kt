@@ -2,9 +2,12 @@ package net.pythoncore.parser.ast
 
 import net.pythoncore.parser.Token
 
-class TypedArgAssignNodes(startPos: Int, endPos: Int, typeComment: Token?, left: BaseNode, symbol: Token, right: BaseNode)
-    : BinaryNode(startPos, endPos, left, symbol, right) {
+class TypedArgAssignNodes(startPos: Int, endPos: Int, typeComment: Token?, left: BaseNode, symbol: Token?, right: BaseNode?)
+    : BaseNode(startPos, endPos) {
         val typeCommentNode = typeComment
+        val leftNode = left
+        val symbolOne = symbol
+        val rightNode = right
     }
 
 class TypedArgsListNode(

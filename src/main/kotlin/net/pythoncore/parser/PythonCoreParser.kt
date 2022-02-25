@@ -245,8 +245,44 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
         return ParametersNode(start, tokenizer.curIndex, symbol1, right, symbol2)
     }
 
+    private fun parseTypedArgAssignNode(isTypedTokenPossible: Boolean) : BaseNode {
+        val start = tokenizer.curIndex
+        val tc = if(isTypedTokenPossible && tokenizer.curSymbol.tokenKind == TokenCode.TypeComment) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            symbol
+        } else null
+        val left = parseTFPDef()
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyAssign) {
+            val symbol = tokenizer.curSymbol
+            tokenizer.advance()
+            val right = parseTest(true)
+            TypedArgAssignNodes(start, tokenizer.curIndex, tc, left, symbol, right)
+        }
+        else if (tc == null) return left
+        return TypedArgAssignNodes(start, tokenizer.curIndex, tc, left, null, null)
+    }
+
     private fun parseTypedArgsList() : BaseNode {
-        throw NotImplementedError()
+        val start = tokenizer.curIndex
+        var mulOp: Token? = null
+        var mulNode: BaseNode? = null
+        var powerOp: Token? = null
+        var powerNode: BaseNode? = null
+        var slashOp: Token? = null
+        val nodes = mutableListOf<BaseNode>()
+        val sepOp = mutableListOf<Token>()
+
+        return TypedArgsListNode(
+            start,
+            tokenizer.curIndex,
+            mulOp,
+            mulNode,
+            powerOp,
+            powerNode,
+            slashOp,
+            if (nodes.isEmpty()) null else nodes.toTypedArray(),
+            if(sepOp.isEmpty()) null else sepOp.toTypedArray())
     }
 
     private fun parseTFPDef() : BaseNode {
