@@ -9,3 +9,7 @@ open class Token(tokenCode: TokenCode, startPos: Int = -1, endPos: Int = -1) {
 class NameToken(startPos: Int, endPos: Int, text: String) : Token(TokenCode.NAME, startPos, endPos) {
     val textData = text
 }
+
+class NumberToken(startPos: Int, endPos: Int, text: String) : Token(TokenCode.NUMBER, startPos, endPos) {
+    val textData = text
+}

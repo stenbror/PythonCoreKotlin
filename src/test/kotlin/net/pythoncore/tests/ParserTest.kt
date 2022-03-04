@@ -116,4 +116,25 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomNumberLiteral() {
+        val tokens = arrayOf(
+            Pair(NumberToken(0, 5, "0.34J"), 0),
+            Pair(Token(TokenCode.EOF), 5)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is NumberLiteralNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as NumberLiteralNode).nodeStartPos )
+        assertEquals(5, ((node as EvalInputNode).rightNode as NumberLiteralNode).nodeEndPos )
+        assertEquals("0.34J", (((node as EvalInputNode).rightNode as NumberLiteralNode).symbolOne as NumberToken).textData )
+        assertEquals(0, (((node as EvalInputNode).rightNode as NumberLiteralNode).symbolOne as NumberToken).startPosition )
+        assertEquals(5, (((node as EvalInputNode).rightNode as NumberLiteralNode).symbolOne as NumberToken).endPosition )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
