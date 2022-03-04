@@ -1,8 +1,7 @@
 package net.pythoncore.Tests
 
 import net.pythoncore.parser.*
-import net.pythoncore.parser.ast.EvalInputNode
-import net.pythoncore.parser.ast.NoneLiteralNode
+import net.pythoncore.parser.ast.*
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -21,7 +20,6 @@ class MockedPythonCoreTokenizer(val tokens: Array<Pair<Token, Int>>) : IPythonCo
     override fun advance() {
         index++
     }
-
 }
 
 class ParserTest {
@@ -40,6 +38,24 @@ class ParserTest {
         assertEquals(true, (node as EvalInputNode).rightNode is NoneLiteralNode)
         assertEquals(0, ((node as EvalInputNode).rightNode as NoneLiteralNode).nodeStartPos )
         assertEquals(4, ((node as EvalInputNode).rightNode as NoneLiteralNode).nodeEndPos )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
+
+    @Test
+    fun testAtomFalse() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyFalse), 0),
+            Pair(Token(TokenCode.EOF), 5)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is FalseLiteralNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as FalseLiteralNode).nodeStartPos )
+        assertEquals(5, ((node as EvalInputNode).rightNode as FalseLiteralNode).nodeEndPos )
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
