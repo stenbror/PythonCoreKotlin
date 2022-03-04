@@ -2,7 +2,7 @@ package net.pythoncore.parser
 
 import net.pythoncore.parser.ast.*
 
-class PythonCoreParser(scanner: PythonCoreTokenizer) {
+class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private val tokenizer = scanner
     private var level = 0 // Loop statement that break and continue can handle
     private var funcLevel = 0 // function allows return statement
@@ -1518,7 +1518,8 @@ class PythonCoreParser(scanner: PythonCoreTokenizer) {
             }
             return AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, nodes.toTypedArray())
         }
-        return AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, null )
+        return if (symbol.tokenKind == TokenCode.Empty) node
+        else AtomExpressionNode(start, tokenizer.curIndex, symbol.tokenKind == TokenCode.PyAwait, symbol, node, null )
     }
 
     private fun parsePower() : BaseNode {

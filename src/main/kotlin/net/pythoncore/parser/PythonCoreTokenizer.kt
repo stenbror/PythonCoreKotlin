@@ -1,11 +1,17 @@
 package net.pythoncore.parser
 
-class PythonCoreTokenizer(text: String) {
+interface IPythonCoreTokenizer {
+    var curSymbol: Token
+    var curIndex: Int
+    fun advance() : Unit
+}
+
+class PythonCoreTokenizer(text: String) : IPythonCoreTokenizer {
     private val sourceBuffer = text
 
-    var curSymbol: Token = Token(TokenCode.Empty)
-    var curIndex: Int = 0
+    override var curSymbol: Token = Token(TokenCode.Empty)
+    override var curIndex: Int = 0
 
 
-    fun advance() : Unit { }
+    override fun advance() : Unit { }
 }
