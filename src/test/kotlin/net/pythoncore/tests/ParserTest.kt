@@ -77,4 +77,22 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomElipsis() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyElipsis), 0),
+            Pair(Token(TokenCode.EOF), 3)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is ElipsisLiteralNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as ElipsisLiteralNode).nodeStartPos )
+        assertEquals(3, ((node as EvalInputNode).rightNode as ElipsisLiteralNode).nodeEndPos )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
