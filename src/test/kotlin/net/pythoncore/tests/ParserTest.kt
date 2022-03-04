@@ -1,4 +1,4 @@
-package net.pythoncore.Tests
+package net.pythoncore.tests
 
 import net.pythoncore.parser.*
 import net.pythoncore.parser.ast.*
@@ -56,6 +56,24 @@ class ParserTest {
         assertEquals(true, (node as EvalInputNode).rightNode is FalseLiteralNode)
         assertEquals(0, ((node as EvalInputNode).rightNode as FalseLiteralNode).nodeStartPos )
         assertEquals(5, ((node as EvalInputNode).rightNode as FalseLiteralNode).nodeEndPos )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
+
+    @Test
+    fun testAtomTrue() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyTrue), 0),
+            Pair(Token(TokenCode.EOF), 4)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is TrueLiteralNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as TrueLiteralNode).nodeStartPos )
+        assertEquals(4, ((node as EvalInputNode).rightNode as TrueLiteralNode).nodeEndPos )
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
