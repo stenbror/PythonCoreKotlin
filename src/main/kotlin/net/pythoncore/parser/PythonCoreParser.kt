@@ -2191,11 +2191,13 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
 
     private fun parseCompIter() : BaseNode {
         assert(tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyFor, TokenCode.PyAsync, TokenCode.PyIf))
-        when (tokenizer.curSymbol.tokenKind) {
+        return when (tokenizer.curSymbol.tokenKind) {
             TokenCode.PyAsync,
-            TokenCode.PyFor,
+            TokenCode.PyFor -> {
+                parseCompFor()
+            }
             TokenCode.PyIf -> {
-                return parseCompFor()
+                parseCompIf()
             }
             else -> {
                 throw NotImplementedError() // Should never happen due to assert statement,
