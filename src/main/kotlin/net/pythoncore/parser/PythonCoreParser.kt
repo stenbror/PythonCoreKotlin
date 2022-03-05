@@ -1878,7 +1878,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private fun parseTestListComp() : BaseNode {
         val start = tokenizer.curIndex
         val nodeFirst = if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseStarExpr() else parseNamedExpr()
-        if (tokenizer.curSymbol.tokenKind == TokenCode.PyFor) {
+        if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyFor, TokenCode.PyAsync)) {
             val nodes = mutableListOf<BaseNode>()
             nodes.add(nodeFirst)
             nodes.add(parseCompFor())

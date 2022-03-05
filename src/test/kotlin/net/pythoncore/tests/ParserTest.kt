@@ -362,4 +362,46 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomListWithTestListWithMultipleStarAndCompForArgumentLiteral() {
+        val tokens = arrayOf( // [*a async for b in c]
+            Pair(Token(TokenCode.PyLeftBracket), 0),
+            Pair(Token(TokenCode.PyMul), 1),
+            Pair(NameToken(2, 3, "a"), 2),
+            Pair(Token(TokenCode.PyAsync), 4),
+            Pair(Token(TokenCode.PyFor), 10), // 14
+            Pair(NameToken(14, 15, "b"), 14),
+            Pair(Token(TokenCode.PyIn), 16),
+            Pair(NameToken(14, 15, "c"), 14),
+            Pair(Token(TokenCode.PyRightBracket), 15),
+            Pair(Token(TokenCode.EOF), 16)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is ListNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as ListNode).nodeStartPos )
+        assertEquals(16, ((node as EvalInputNode).rightNode as ListNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftBracket, ((node as EvalInputNode).rightNode as ListNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as ListNode).rightNode is TestListNode )
+        assertEquals(2, (((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes.size )
+        assertEquals(true, (((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[0] is BitwiseStarExpressionNode )
+        assertEquals(true, (((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] is CompForNode )
+        assertEquals(4, ((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).nodeStartPos )
+        assertEquals(15, ((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).nodeEndPos )
+        assertEquals(TokenCode.PyAsync, ((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).symbolOne.tokenKind )
+        assertEquals(true, ((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).rightNode is CompSyncForNode )
+        assertEquals(TokenCode.PyFor, (((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).rightNode as CompSyncForNode).symbolOne.tokenKind )
+        assertEquals(true, (((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).rightNode as CompSyncForNode).leftNode is NameLiteralNode )
+        assertEquals(TokenCode.PyIn, (((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).rightNode as CompSyncForNode).symbolTwo.tokenKind )
+        assertEquals(true, (((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).rightNode as CompSyncForNode).rightNode is NameLiteralNode )
+        assertEquals(true, (((((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementNodes[1] as CompForNode).rightNode as CompSyncForNode).nextNode is BaseNode )
+        assertEquals(null, (((node as EvalInputNode).rightNode as ListNode).rightNode as TestListNode).elementerSeparators )
+        assertEquals(TokenCode.PyRightBracket, ((node as EvalInputNode).rightNode as ListNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
