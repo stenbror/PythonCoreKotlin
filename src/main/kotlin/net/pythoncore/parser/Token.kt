@@ -13,3 +13,7 @@ class NameToken(startPos: Int, endPos: Int, text: String) : Token(TokenCode.NAME
 class NumberToken(startPos: Int, endPos: Int, text: String) : Token(TokenCode.NUMBER, startPos, endPos) {
     val textData = text
 }
+
+class StringToken(startPos: Int, endPos: Int, text: Array<String>) : Token(TokenCode.STRING, startPos, endPos) {
+    val textData = text
+}

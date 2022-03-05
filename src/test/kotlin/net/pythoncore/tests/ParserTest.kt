@@ -137,4 +137,26 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomStringLiteral() {
+        val tokens = arrayOf(
+            Pair(StringToken(0, 5, arrayOf<String>("Hello, World!", "Several items actually!")), 0),
+            Pair(Token(TokenCode.EOF), 5)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is StringLiteralNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as StringLiteralNode).nodeStartPos )
+        assertEquals(5, ((node as EvalInputNode).rightNode as StringLiteralNode).nodeEndPos )
+        assertEquals("Hello, World!", (((node as EvalInputNode).rightNode as StringLiteralNode).symbolOne as StringToken).textData.get(0) )
+        assertEquals("Several items actually!", (((node as EvalInputNode).rightNode as StringLiteralNode).symbolOne as StringToken).textData.get(1) )
+        assertEquals(0, (((node as EvalInputNode).rightNode as StringLiteralNode).symbolOne as StringToken).startPosition )
+        assertEquals(5, (((node as EvalInputNode).rightNode as StringLiteralNode).symbolOne as StringToken).endPosition )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
