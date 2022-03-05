@@ -1670,7 +1670,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         val symbol = tokenizer.curSymbol
         assert(symbol.tokenKind == TokenCode.PyMul)
         tokenizer.advance()
-        return BitwiseStarExpressionNode(start, tokenizer.curIndex, symbol, parseBitwiseOr())
+        val right = parseBitwiseOr()
+        return BitwiseStarExpressionNode(start, tokenizer.curIndex, symbol, right)
     }
 
     private fun parseComparison() : BaseNode {

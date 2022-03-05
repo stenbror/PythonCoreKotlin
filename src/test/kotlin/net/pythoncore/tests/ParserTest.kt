@@ -272,4 +272,32 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomListWithTestListWithSingleStarArgumentLiteral() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftBracket), 0),
+            Pair(Token(TokenCode.PyMul), 1),
+            Pair(NameToken(2, 3, "a"), 2),
+            Pair(Token(TokenCode.PyRightBracket), 3),
+            Pair(Token(TokenCode.EOF), 4)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is ListNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as ListNode).nodeStartPos )
+        assertEquals(4, ((node as EvalInputNode).rightNode as ListNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftBracket, ((node as EvalInputNode).rightNode as ListNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as ListNode).rightNode is BitwiseStarExpressionNode )
+        assertEquals(TokenCode.PyMul, (((node as EvalInputNode).rightNode as ListNode).rightNode as BitwiseStarExpressionNode).symbolOne.tokenKind )
+        assertEquals(true, (((node as EvalInputNode).rightNode as ListNode).rightNode as BitwiseStarExpressionNode).rightNode is NameLiteralNode )
+        assertEquals(1, (((node as EvalInputNode).rightNode as ListNode).rightNode as BitwiseStarExpressionNode).nodeStartPos )
+        assertEquals(3, (((node as EvalInputNode).rightNode as ListNode).rightNode as BitwiseStarExpressionNode).nodeEndPos )
+        assertEquals(TokenCode.PyRightBracket, ((node as EvalInputNode).rightNode as ListNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
