@@ -1527,7 +1527,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            return PowerOperatorNode(start, tokenizer.curIndex, node, symbol, parseFactor())
+            val right = parseFactor()
+            return PowerOperatorNode(start, tokenizer.curIndex, node, symbol, right)
         }
         return node
     }
@@ -1540,7 +1541,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
             TokenCode.PyMinus,
             TokenCode.PyBitInvert -> {
                 tokenizer.advance()
-                return FactorUnaryPlusNode(start, tokenizer.curIndex, symbol, parseFactor())
+                val right = parseFactor()
+                return FactorUnaryPlusNode(start, tokenizer.curIndex, symbol, right)
             }
             else -> {
                 return parsePower()
@@ -1551,6 +1553,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private fun parseTerm() : BaseNode {
         val start = tokenizer.curIndex
         var left = parseFactor()
+        var right = BaseNode(-1, -1)
 
         while (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyMul, TokenCode.PyDiv, TokenCode.PyFloorDiv, TokenCode.PyModulo, TokenCode.PyMatrice)) {
 
@@ -1558,27 +1561,32 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 TokenCode.PyMul -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = TermMulOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                    right = parseFactor()
+                    left = TermMulOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyDiv -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = TermDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                    right = parseFactor()
+                    left = TermDivOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyFloorDiv -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = TermFloorDivOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                    right = parseFactor()
+                    left = TermFloorDivOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyModulo -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = TermModuloOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                    right = parseFactor()
+                    left = TermModuloOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyMatrice -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = TermMatriceOperatorNode(start, tokenizer.curIndex, left, symbol, parseFactor())
+                    right = parseFactor()
+                    left = TermMatriceOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
             }
         }
@@ -1588,6 +1596,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private fun parseArith() : BaseNode {
         val start = tokenizer.curIndex
         var left = parseTerm()
+        var right = BaseNode(-1, -1)
 
         while (tokenizer.curSymbol.tokenKind == TokenCode.PyPlus || tokenizer.curSymbol.tokenKind == TokenCode.PyMinus) {
 
@@ -1595,12 +1604,14 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 TokenCode.PyPlus -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = ArithmeticPlusOperatorNode(start, tokenizer.curIndex, left, symbol, parseTerm())
+                    right = parseTerm()
+                    left = ArithmeticPlusOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyMinus -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = ArithmeticMinusOperatorNode(start, tokenizer.curIndex, left, symbol, parseTerm())
+                    right = parseTerm()
+                    left = ArithmeticMinusOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
             }
         }
@@ -1610,6 +1621,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private fun parseShift() : BaseNode {
         val start = tokenizer.curIndex
         var left = parseArith()
+        var right = BaseNode(-1, -1)
 
         while (tokenizer.curSymbol.tokenKind == TokenCode.PyShiftLeft || tokenizer.curSymbol.tokenKind == TokenCode.PyShiftRight) {
 
@@ -1617,12 +1629,14 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 TokenCode.PyShiftLeft -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = BitwiseShiftLeftExpressionNode(start, tokenizer.curIndex, left, symbol, parseArith())
+                    right = parseArith()
+                    left = BitwiseShiftLeftExpressionNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyShiftRight -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = BitwiseShiftRightExpressionNode(start, tokenizer.curIndex, left, symbol, parseArith())
+                    right = parseArith()
+                    left = BitwiseShiftRightExpressionNode(start, tokenizer.curIndex, left, symbol, right)
                 }
             }
         }
@@ -1636,7 +1650,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         while (tokenizer.curSymbol.tokenKind == TokenCode.PyBitAnd) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            left = BitwiseAndExpressionNode(start, tokenizer.curIndex, left, symbol, parseShift())
+            val right = parseShift()
+            left = BitwiseAndExpressionNode(start, tokenizer.curIndex, left, symbol, right)
         }
         return left
     }
@@ -1648,7 +1663,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         while (tokenizer.curSymbol.tokenKind == TokenCode.PyBitXor) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            left = BitwiseXorExpressionNode(start, tokenizer.curIndex, left, symbol, parseBitwiseAnd())
+            val right = parseBitwiseAnd()
+            left = BitwiseXorExpressionNode(start, tokenizer.curIndex, left, symbol, right)
         }
         return left
     }
@@ -1660,7 +1676,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         while (tokenizer.curSymbol.tokenKind == TokenCode.PyBitOr) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            left = BitwiseOrExpressionNode(start, tokenizer.curIndex, left, symbol, parseBitwiseXor())
+            val right = parseBitwiseXor()
+            left = BitwiseOrExpressionNode(start, tokenizer.curIndex, left, symbol, right)
         }
         return left
     }
@@ -1677,6 +1694,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private fun parseComparison() : BaseNode {
         val start = tokenizer.curIndex
         var left = parseBitwiseOr()
+        var right = BaseNode(-1, -1)
         val operators = setOf(
                 TokenCode.PyLess,
                 TokenCode.PyLessEqual,
@@ -1694,32 +1712,38 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 TokenCode.PyLess -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareLessOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareLessOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyLessEqual -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareLessEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareLessEqualOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyEqual -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareEqualOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyNotEqual -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareNotEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareNotEqualOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyGreaterEqual -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareGreaterEqualOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareGreaterEqualOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyGreater -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareGreaterOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareGreaterOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyNot -> {
                     val symbol = tokenizer.curSymbol
@@ -1729,12 +1753,14 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                     }
                     val symbol2 = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareNotInOperatorNode(start, tokenizer.curIndex, left, symbol, symbol2, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareNotInOperatorNode(start, tokenizer.curIndex, left, symbol, symbol2, right)
                 }
                 TokenCode.PyIn -> {
                     val symbol = tokenizer.curSymbol
                     tokenizer.advance()
-                    left = CompareInOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
+                    right = parseBitwiseOr()
+                    left = CompareInOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                 }
                 TokenCode.PyIs -> {
                     val symbol = tokenizer.curSymbol
@@ -1742,9 +1768,12 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                     if (tokenizer.curSymbol.tokenKind == TokenCode.PyNot) {
                         val symbol2 = tokenizer.curSymbol
                         tokenizer.advance()
-                        left = CompareIsNotOperatorNode(start, tokenizer.curIndex, left, symbol, symbol2, parseBitwiseOr())
+                        right = parseBitwiseOr()
+                        left = CompareIsNotOperatorNode(start, tokenizer.curIndex, left, symbol, symbol2, right)
+                    } else {
+                        right = parseBitwiseOr()
+                        left = CompareIsOperatorNode(start, tokenizer.curIndex, left, symbol, right)
                     }
-                    left = CompareIsOperatorNode(start, tokenizer.curIndex, left, symbol, parseBitwiseOr())
                 }
             }
         }
@@ -1756,7 +1785,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
             val start = tokenizer.curIndex
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            return NotTestNode(start, tokenizer.curIndex, symbol, parseNotTest())
+            val right = parseNotTest()
+            return NotTestNode(start, tokenizer.curIndex, symbol, right)
         }
         return parseComparison()
     }
@@ -1768,7 +1798,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         while (tokenizer.curSymbol.tokenKind == TokenCode.PyAnd) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            left = AndTestNode(start, tokenizer.curIndex, left, symbol, parseNotTest())
+            val right = parseNotTest()
+            left = AndTestNode(start, tokenizer.curIndex, left, symbol, right)
         }
         return left
     }
@@ -1780,7 +1811,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         while (tokenizer.curSymbol.tokenKind == TokenCode.PyOr) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            left = OrTestNode(start, tokenizer.curIndex, left, symbol, parseAndTest())
+            val right = parseAndTest()
+            left = OrTestNode(start, tokenizer.curIndex, left, symbol, right)
         }
         return left
     }
@@ -1800,9 +1832,11 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         val symbol2 = tokenizer.curSymbol
         tokenizer.advance()
         if (isCond) {
-            return LambdaNode(start, tokenizer.curIndex, symbol, left, symbol2, parseTest(true))
+            val right = parseTest(true)
+            return LambdaNode(start, tokenizer.curIndex, symbol, left, symbol2, right)
         }
-        return LambdaNoConditionalNode(start, tokenizer.curIndex, symbol, left, symbol2, parseTest(false))
+        val right = parseTest(false)
+        return LambdaNoConditionalNode(start, tokenizer.curIndex, symbol, left, symbol2, right)
     }
 
     private fun parseTest(isCond: Boolean) : BaseNode {
@@ -1822,7 +1856,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 }
                 val symbol2 = tokenizer.curSymbol
                 tokenizer.advance()
-                return TestNode(start, tokenizer.curIndex, left, symbol1, right, symbol2, parseTest(true))
+                val next = parseTest(true)
+                return TestNode(start, tokenizer.curIndex, left, symbol1, right, symbol2, next)
             }
             return left
         }
@@ -1834,7 +1869,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
         if (tokenizer.curSymbol.tokenKind == TokenCode.PyColonAssign) {
             val symbol = tokenizer.curSymbol
             tokenizer.advance()
-            return ColonAssignNode(start, tokenizer.curIndex, left, symbol, parseTest(true))
+            val right = parseTest(true)
+            return ColonAssignNode(start, tokenizer.curIndex, left, symbol, right)
         }
         return left
     }
