@@ -14,6 +14,6 @@ class NumberToken(startPos: Int, endPos: Int, text: String) : Token(TokenCode.NU
     val textData = text
 }
 
-class StringToken(startPos: Int, endPos: Int, text: Array<String>) : Token(TokenCode.STRING, startPos, endPos) {
+class StringToken(startPos: Int, endPos: Int, text: String) : Token(TokenCode.STRING, startPos, endPos) {
     val textData = text
 }

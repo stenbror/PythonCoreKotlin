@@ -1427,16 +1427,15 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
             TokenCode.STRING -> {
                 val symbol = tokenizer.curSymbol
                 tokenizer.advance()
+                val nodes = mutableListOf<Token>()
                 if (tokenizer.curSymbol.tokenKind == TokenCode.STRING) {
-                    val nodes = mutableListOf<Token>()
                     nodes.add(symbol)
                     while (tokenizer.curSymbol.tokenKind == TokenCode.STRING) {
                         nodes.add(tokenizer.curSymbol)
                         tokenizer.advance()
                     }
-                    StringArrayLiteralNode(start, tokenizer.curIndex, nodes.toTypedArray())
                 }
-                StringLiteralNode(start, tokenizer.curIndex, symbol)
+                if (nodes.isEmpty()) StringLiteralNode(start, tokenizer.curIndex, symbol) else StringArrayLiteralNode(start, tokenizer.curIndex, nodes.toTypedArray())
             }
             TokenCode.PyLeftParen -> {
                 val symbol1 = tokenizer.curSymbol
