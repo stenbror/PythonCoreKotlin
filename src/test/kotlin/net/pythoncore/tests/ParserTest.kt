@@ -227,4 +227,26 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomDictionaryLiteral() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftCurly), 0),
+            Pair(Token(TokenCode.PyRightCurly), 1),
+            Pair(Token(TokenCode.EOF), 2)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is DictionaryNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as DictionaryNode).nodeStartPos )
+        assertEquals(2, ((node as EvalInputNode).rightNode as DictionaryNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftCurly, ((node as EvalInputNode).rightNode as DictionaryNode).symbolOne.tokenKind )
+        assertEquals(null, ((node as EvalInputNode).rightNode as DictionaryNode).rightNode )
+        assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as DictionaryNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }

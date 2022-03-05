@@ -1479,7 +1479,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                         parseDictorSetMaker()
                     }
                 }
-                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightBracket) {
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightCurly) {
                     if (right is DictionaryContainerNode)
                         throw SyntaxError(tokenizer.curIndex, "Expecting '}' in dictionary!")
                     else if (right is SetContainerNode)
