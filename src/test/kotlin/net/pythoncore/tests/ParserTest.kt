@@ -821,7 +821,7 @@ class ParserTest {
     }
 
     @Test
-    fun testAtomSetLiteralSingleArgumentWithTrailingComme() {
+    fun testAtomSetLiteralSingleArgumentWithTrailingComma() {
         val tokens = arrayOf(
             Pair(Token(TokenCode.PyLeftCurly), 0),
             Pair(NameToken(2, 3, "a"), 2),
@@ -844,6 +844,62 @@ class ParserTest {
         assertEquals(1, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementerSeparators!!.size)
         assertEquals(1, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes.size)
         assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[0] is NameLiteralNode)
+        assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as SetNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
+
+    @Test
+    fun testAtomSetLiteralSingleArgumentWithCompIter() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftCurly), 0),
+            Pair(NameToken(2, 3, "a"), 2),
+            Pair(Token(TokenCode.PyFor), 4),
+            Pair(NameToken(8, 9, "b"), 8),
+            Pair(Token(TokenCode.PyComma), 9),
+            Pair(NameToken(10, 11, "c"), 10),
+            Pair(Token(TokenCode.PyIn), 12),
+            Pair(NameToken(15, 16, "d"), 15),
+            Pair(Token(TokenCode.PyFor), 17),
+            Pair(NameToken(21, 22, "e"), 21),
+            Pair(Token(TokenCode.PyComma), 22),
+            Pair(NameToken(24, 25, "f"), 24),
+            Pair(Token(TokenCode.PyIn), 27),
+            Pair(NameToken(30, 31, "g"), 30),
+            Pair(Token(TokenCode.PyIf), 32),
+            Pair(NameToken(35, 36, "h"), 35),
+            Pair(Token(TokenCode.PyRightCurly), 38),
+            Pair(Token(TokenCode.EOF), 39)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is SetNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as SetNode).nodeStartPos )
+        assertEquals(39, ((node as EvalInputNode).rightNode as SetNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftCurly, ((node as EvalInputNode).rightNode as SetNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as SetNode).rightNode is SetContainerNode )
+        assertEquals(2, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeStartPos)
+        assertEquals(38, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeEndPos)
+        assertEquals(0, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementerSeparators!!.size)
+        assertEquals(2, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes.size)
+        assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[0] is NameLiteralNode)
+        assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] is CompSyncForNode)
+        assertEquals(TokenCode.PyFor, ((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).symbolOne.tokenKind )
+        assertEquals(true, ((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode is ExprListNode )
+        assertEquals(8, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode as ExprListNode).nodeStartPos )
+        assertEquals(12, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode as ExprListNode).nodeEndPos )
+        assertEquals(2, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode as ExprListNode).elementNodes.size )
+        assertEquals(1, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode as ExprListNode).elementerSeparators!!.size )
+        assertEquals(true, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode as ExprListNode).elementNodes[0] is NameLiteralNode )
+        assertEquals(true, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode as ExprListNode).elementNodes[1] is NameLiteralNode )
+        assertEquals(TokenCode.PyComma, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).leftNode as ExprListNode).elementerSeparators!![0].tokenKind )
+        assertEquals(TokenCode.PyIn, ((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).symbolTwo.tokenKind )
+        assertEquals(true, ((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).rightNode is NameLiteralNode )
+        assertEquals(true, ((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).nextNode is CompSyncForNode )
+        assertEquals(true, (((((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] as CompSyncForNode).nextNode as CompSyncForNode ).nextNode is CompIfNode )
         assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as SetNode).symbolTwo.tokenKind )
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
