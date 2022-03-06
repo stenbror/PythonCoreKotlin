@@ -770,7 +770,8 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 TokenCode.PyColon,
                 TokenCode.PyAssign,
                 TokenCode.PySemiColon,
-                TokenCode.Newline
+                TokenCode.Newline,
+                TokenCode.PyRightParen
             )
             while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
                 separators.add(tokenizer.curSymbol)
@@ -2018,7 +2019,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 tokenizer.advance()
                 if (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
                     throw SyntaxError(tokenizer.curIndex, "Unexpected ',' found in List!")
-                } else if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PySemiColon, TokenCode.Newline)) break
+                } else if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PySemiColon, TokenCode.Newline )) break
                 nodes.add(parseTest(true))
             }
             return TestListNode(start, tokenizer.curIndex, nodes.toTypedArray(), separators.toTypedArray())
