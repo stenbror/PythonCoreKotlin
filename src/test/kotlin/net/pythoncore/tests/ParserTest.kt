@@ -632,6 +632,7 @@ class ParserTest {
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
 
+    @Test
     fun testAtomSetLiteralSingle() {
         val tokens = arrayOf(
             Pair(Token(TokenCode.PyLeftCurly), 0),
@@ -646,12 +647,12 @@ class ParserTest {
         assertEquals(true, (node is EvalInputNode))
         assertEquals(true, (node as EvalInputNode).rightNode is SetNode)
         assertEquals(0, ((node as EvalInputNode).rightNode as SetNode).nodeStartPos )
-        assertEquals(4, ((node as EvalInputNode).rightNode as SetNode).nodeEndPos )
+        assertEquals(5, ((node as EvalInputNode).rightNode as SetNode).nodeEndPos )
         assertEquals(TokenCode.PyLeftCurly, ((node as EvalInputNode).rightNode as SetNode).symbolOne.tokenKind )
         assertEquals(true, ((node as EvalInputNode).rightNode as SetNode).rightNode is SetContainerNode )
         assertEquals(2, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeStartPos)
-        assertEquals(3, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeEndPos)
-        assertEquals(null, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementerSeparators)
+        assertEquals(4, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeEndPos)
+        assertEquals(0, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementerSeparators!!.size)
         assertEquals(1, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes.size)
         assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[0] is NameLiteralNode)
         assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as SetNode).symbolTwo.tokenKind )
