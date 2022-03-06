@@ -2092,9 +2092,9 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private fun parseDictorSetMaker() : BaseNode {
         val start = tokenizer.curIndex
         var isDictionary = true
-        var key: BaseNode? = null
+        var key: BaseNode = BaseNode(-1, -1)
         var symbol : Token? = null
-        var value: BaseNode? = null
+        var value: BaseNode = BaseNode(-1, -1)
         when (tokenizer.curSymbol.tokenKind) {
             TokenCode.PyMul -> {
                 isDictionary = false
@@ -2124,12 +2124,9 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
             val nodes = mutableListOf<BaseNode>()
             val separator = mutableListOf<Token>()
             nodes.add(if (key is PowerKeyNode) key else {
-                if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
+                if (symbol!!.tokenKind != TokenCode.PyColon) {
                     throw SyntaxError(tokenizer.curIndex, "Expecting ':' in dictionary entry!")
                 }
-                symbol = tokenizer.curSymbol
-                tokenizer.advance()
-                value = parseTest(true)
                 KeyValueNode(start, tokenizer.curIndex, key, symbol, value)
             })
             if (tokenizer.curSymbol.tokenKind in setOf(TokenCode.PyFor, TokenCode.PyAsync)) {
@@ -2139,7 +2136,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
             while (tokenizer.curSymbol.tokenKind == TokenCode.PyComma) {
                 separator.add(tokenizer.curSymbol)
                 tokenizer.advance()
-                key = null; symbol = null; value = null;
+                key = BaseNode(-1, -1); symbol = null; value = BaseNode(-1, -1)
                 when (tokenizer.curSymbol.tokenKind) {
                     TokenCode.PyComma -> {
                         throw SyntaxError(tokenizer.curIndex, "Unexpected ',' in dictionary!")

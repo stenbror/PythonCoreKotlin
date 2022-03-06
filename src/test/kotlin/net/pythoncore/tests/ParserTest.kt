@@ -904,4 +904,39 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomDictionaryLiteralSingle() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftCurly), 0),
+            Pair(NameToken(2, 3, "a"), 2),
+            Pair(Token(TokenCode.PyColon), 4),
+            Pair(NameToken(6, 7, "b"), 6),
+            Pair(Token(TokenCode.PyRightCurly), 8),
+            Pair(Token(TokenCode.EOF), 9)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is DictionaryNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as DictionaryNode).nodeStartPos )
+        assertEquals(9, ((node as EvalInputNode).rightNode as DictionaryNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftCurly, ((node as EvalInputNode).rightNode as DictionaryNode).symbolOne.tokenKind )
+
+        assertEquals(true, ((node as EvalInputNode).rightNode as DictionaryNode).rightNode is DictionaryContainerNode )
+        assertEquals(2, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).nodeStartPos)
+        assertEquals(8, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).nodeEndPos)
+        assertEquals(0, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementerSeparators!!.size)
+        assertEquals(1, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementNodes.size)
+
+        assertEquals(true, ((((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementNodes[0] as KeyValueNode).leftNode is NameLiteralNode)
+        assertEquals(TokenCode.PyColon, ((((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementNodes[0] as KeyValueNode).symbolOne.tokenKind)
+        assertEquals(true, ((((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementNodes[0] as KeyValueNode).rightNode is NameLiteralNode)
+
+        assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as DictionaryNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
