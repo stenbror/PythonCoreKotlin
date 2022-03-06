@@ -755,4 +755,40 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomSetLiteralMultipleStarExprWithExtraArgument() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftCurly), 0),
+            Pair(Token(TokenCode.PyMul), 1),
+            Pair(NameToken(2, 3, "a"), 2),
+            Pair(Token(TokenCode.PyComma), 3),
+            Pair(Token(TokenCode.PyMul), 5),
+            Pair(NameToken(6, 7, "b"), 6),
+            Pair(Token(TokenCode.PyComma), 7),
+            Pair(NameToken(8, 9, "c"), 8),
+            Pair(Token(TokenCode.PyRightCurly), 10),
+            Pair(Token(TokenCode.EOF), 11)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is SetNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as SetNode).nodeStartPos )
+        assertEquals(11, ((node as EvalInputNode).rightNode as SetNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftCurly, ((node as EvalInputNode).rightNode as SetNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as SetNode).rightNode is SetContainerNode )
+        assertEquals(1, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeStartPos)
+        assertEquals(10, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeEndPos)
+        assertEquals(2, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementerSeparators!!.size)
+        assertEquals(3, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes.size)
+        assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[0] is BitwiseStarExpressionNode)
+        assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[1] is BitwiseStarExpressionNode)
+        assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[2] is NameLiteralNode)
+        assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as SetNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
