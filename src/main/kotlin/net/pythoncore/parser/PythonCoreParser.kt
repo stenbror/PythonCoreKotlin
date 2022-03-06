@@ -2182,7 +2182,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                     }
                     TokenCode.PyRightCurly -> break
                     else -> {
-                        nodes.add(if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseBitwiseOr() else parseTest(true))
+                        nodes.add(if (tokenizer.curSymbol.tokenKind == TokenCode.PyMul) parseStarExpr() else parseTest(true))
                     }
                 }
             }
