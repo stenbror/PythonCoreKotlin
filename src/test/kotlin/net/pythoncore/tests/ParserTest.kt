@@ -562,4 +562,41 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomTupleWithYieldTestListWithTrailingCommaArgumentLiteral() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftParen), 0),
+            Pair(Token(TokenCode.PyYield), 2),
+            Pair(NameToken(7, 8, "a"), 7),
+            Pair(Token(TokenCode.PyComma), 8),
+            Pair(NameToken(9, 10, "b"), 9),
+            Pair(Token(TokenCode.PyComma), 10),
+            Pair(Token(TokenCode.PyRightParen), 11),
+            Pair(Token(TokenCode.EOF), 12)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is TupleNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as TupleNode).nodeStartPos )
+        assertEquals(12, ((node as EvalInputNode).rightNode as TupleNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftParen, ((node as EvalInputNode).rightNode as TupleNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as TupleNode).rightNode is YieldNode )
+        assertEquals(TokenCode.PyYield, (((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).symbolOne.tokenKind )
+        assertEquals(2, (((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).nodeStartPos )
+        assertEquals(11, (((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).nodeEndPos )
+        assertEquals(true, (((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).rightNode is TestListStarExprNode )
+        assertEquals(2, ((((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).rightNode as TestListStarExprNode ).elementNodes.size )
+        assertEquals(2, ((((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).rightNode as TestListStarExprNode ).elementerSeparators!!.size )
+        assertEquals(true, ((((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).rightNode as TestListStarExprNode ).elementNodes[0] is NameLiteralNode )
+        assertEquals(true, ((((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).rightNode as TestListStarExprNode ).elementNodes[1] is NameLiteralNode )
+        assertEquals(TokenCode.PyComma, ((((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).rightNode as TestListStarExprNode ).elementerSeparators!![0].tokenKind  )
+        assertEquals(TokenCode.PyComma, ((((node as EvalInputNode).rightNode as TupleNode).rightNode as YieldNode).rightNode as TestListStarExprNode ).elementerSeparators!![1].tokenKind  )
+        assertEquals(TokenCode.PyRightParen, ((node as EvalInputNode).rightNode as TupleNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
