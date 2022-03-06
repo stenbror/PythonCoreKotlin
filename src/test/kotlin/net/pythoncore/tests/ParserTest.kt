@@ -631,4 +631,31 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    fun testAtomSetLiteralSingle() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftCurly), 0),
+            Pair(NameToken(2, 3, "a"), 2),
+            Pair(Token(TokenCode.PyRightCurly), 4),
+            Pair(Token(TokenCode.EOF), 5)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is SetNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as SetNode).nodeStartPos )
+        assertEquals(4, ((node as EvalInputNode).rightNode as SetNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftCurly, ((node as EvalInputNode).rightNode as SetNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as SetNode).rightNode is SetContainerNode )
+        assertEquals(2, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeStartPos)
+        assertEquals(3, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).nodeEndPos)
+        assertEquals(null, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementerSeparators)
+        assertEquals(1, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes.size)
+        assertEquals(true, (((node as EvalInputNode).rightNode as SetNode).rightNode as SetContainerNode ).elementNodes[0] is NameLiteralNode)
+        assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as SetNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
