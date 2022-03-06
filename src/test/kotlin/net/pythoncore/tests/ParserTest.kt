@@ -969,4 +969,33 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomDictionaryLiteralSingleWithPower() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyLeftCurly), 0),
+            Pair(Token(TokenCode.PyPower), 2),
+            Pair(NameToken(4, 5, "a"), 4),
+            Pair(Token(TokenCode.PyRightCurly), 6),
+            Pair(Token(TokenCode.EOF), 7)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is DictionaryNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as DictionaryNode).nodeStartPos )
+        assertEquals(7, ((node as EvalInputNode).rightNode as DictionaryNode).nodeEndPos )
+        assertEquals(TokenCode.PyLeftCurly, ((node as EvalInputNode).rightNode as DictionaryNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as DictionaryNode).rightNode is DictionaryContainerNode )
+        assertEquals(2, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).nodeStartPos)
+        assertEquals(6, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).nodeEndPos)
+        assertEquals(0, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementerSeparators!!.size)
+        assertEquals(1, (((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementNodes.size)
+        assertEquals(true, ((((node as EvalInputNode).rightNode as DictionaryNode).rightNode as DictionaryContainerNode ).elementNodes[0] as PowerKeyNode).rightNode is NameLiteralNode)
+        assertEquals(TokenCode.PyRightCurly, ((node as EvalInputNode).rightNode as DictionaryNode).symbolTwo.tokenKind )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }
