@@ -1301,4 +1301,44 @@ class ParserTest {
         assertEquals(0, (node as EvalInputNode).newlineNode.size)
         assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
     }
+
+    @Test
+    fun testAtomExprSingleAwaitAtomWithTwoDotNameAndIndex() {
+        val tokens = arrayOf(
+            Pair(Token(TokenCode.PyAwait), 0),
+            Pair(NameToken(6, 7, "a"), 6),
+            Pair(Token(TokenCode.PyDot), 7),
+            Pair(NameToken(8, 9, "b"), 8),
+            Pair(Token(TokenCode.PyDot), 9),
+            Pair(NameToken(10, 11, "c"), 10),
+            Pair(Token(TokenCode.PyLeftBracket), 11),
+            Pair(NameToken(12, 13, "d"), 12),
+            Pair(Token(TokenCode.PyRightBracket), 13),
+            Pair(Token(TokenCode.EOF), 14)
+        )
+
+        val lexer = MockedPythonCoreTokenizer(tokens)
+        val parser = PythonCoreParser(lexer)
+        val node = parser.parseEvalInput()
+        assertEquals(true, (node is EvalInputNode))
+        assertEquals(true, (node as EvalInputNode).rightNode is AtomExpressionNode)
+        assertEquals(0, ((node as EvalInputNode).rightNode as AtomExpressionNode).nodeStartPos )
+        assertEquals(14, ((node as EvalInputNode).rightNode as AtomExpressionNode).nodeEndPos )
+        assertEquals(TokenCode.PyAwait, ((node as EvalInputNode).rightNode as AtomExpressionNode).symbolOne.tokenKind )
+        assertEquals(true, ((node as EvalInputNode).rightNode as AtomExpressionNode).leftNode is NameLiteralNode )
+        assertEquals(3, ((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!!.size)
+        assertEquals(true, ((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![0] is DotNameNode )
+        assertEquals(TokenCode.PyDot, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![0] as DotNameNode ).dotNode.tokenKind )
+        assertEquals(TokenCode.NAME, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![0] as DotNameNode ).nameNode.tokenKind )
+        assertEquals(7, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![0] as DotNameNode ).nodeStartPos )
+        assertEquals(9, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![0] as DotNameNode ).nodeEndPos )
+        assertEquals(true, ((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![1] is DotNameNode )
+        assertEquals(TokenCode.PyDot, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![1] as DotNameNode ).dotNode.tokenKind )
+        assertEquals(TokenCode.NAME, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![1] as DotNameNode ).nameNode.tokenKind )
+        assertEquals(9, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![1] as DotNameNode ).nodeStartPos )
+        assertEquals(11, (((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![1] as DotNameNode ).nodeEndPos )
+        assertEquals(true, ((node as EvalInputNode).rightNode as AtomExpressionNode).trailerNodes!![2] is IndexNode )
+        assertEquals(0, (node as EvalInputNode).newlineNode.size)
+        assertEquals(TokenCode.EOF, (node as EvalInputNode).eofNode.tokenKind)
+    }
 }

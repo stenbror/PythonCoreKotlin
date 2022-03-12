@@ -1931,7 +1931,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
                 val symbol1 = tokenizer.curSymbol
                 tokenizer.advance()
                 val node = parseSubscriptList()
-                if (tokenizer.curSymbol.tokenKind != TokenCode.PyLeftBracket) {
+                if (tokenizer.curSymbol.tokenKind != TokenCode.PyRightBracket) {
                     throw SyntaxError(tokenizer.curIndex, "Missing ']' in subscript!")
                 }
                 val symbol2 = tokenizer.curSymbol
