@@ -1821,7 +1821,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     private fun parseLambda(isCond: Boolean) : LambdaBaseNode {
         val start = tokenizer.curIndex
         val symbol = tokenizer.curSymbol
-        assert(symbol.tokenKind == TokenCode.PyAssert)
+        assert(symbol.tokenKind == TokenCode.PyLambda)
         tokenizer.advance()
         var left = BaseNode(-1, -1)
         if (tokenizer.curSymbol.tokenKind != TokenCode.PyColon) {
