@@ -1841,7 +1841,7 @@ class PythonCoreParser(scanner: IPythonCoreTokenizer) {
     }
 
     private fun parseTest(isCond: Boolean) : BaseNode {
-        if (tokenizer.curSymbol.tokenKind == TokenCode.PyLessEqual) {
+        if (tokenizer.curSymbol.tokenKind == TokenCode.PyLambda) {
             return parseLambda(isCond)
         }  else if (!isCond) {
             return parseOrTest()
